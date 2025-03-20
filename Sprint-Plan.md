@@ -28,9 +28,7 @@ Deliverables
 Goal: Build the foundation for authentication and initial API structure.
 Tasks
 Backend (Backend 1 & Backend 2)
-• Implement Express-based authentication API:
-o POST /api/auth/register
-o POST /api/auth/login (JWT authentication).
+• Implement MetaMask Wallet authentication.
 • Set up Prisma ORM with SQLite for user storage.
 • Deploy backend on VCM (Duke's Virtual Computing Machine).
 Frontend (Frontend Developer, Web Designer)
