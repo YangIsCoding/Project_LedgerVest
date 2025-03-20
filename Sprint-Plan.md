@@ -28,7 +28,7 @@ Deliverables
 Goal: Build the foundation for authentication and initial API structure.
 Tasks
 Backend (Backend 1 & Backend 2)
-• Implement Flask-based authentication API:
+• Implement Express-based authentication API:
 o POST /api/auth/register
 o POST /api/auth/login (JWT authentication).
 • Set up Prisma ORM with SQLite for user storage.
