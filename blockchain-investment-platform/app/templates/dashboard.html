@@ -1,0 +1,748 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - BlockFund{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Sidebar Navigation -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="dashboard-tabs" role="tablist">
+                        <a class="list-group-item list-group-item-action active" id="overview-tab" data-bs-toggle="list" href="#overview" role="tab">
+                            <i class="fas fa-tachometer-alt me-2"></i> Overview
+                        </a>
+                        <a class="list-group-item list-group-item-action" id="investments-tab" data-bs-toggle="list" href="#investments" role="tab">
+                            <i class="fas fa-chart-pie me-2"></i> My Investments
+                        </a>
+                        <a class="list-group-item list-group-item-action" id="voting-tab" data-bs-toggle="list" href="#voting" role="tab">
+                            <i class="fas fa-vote-yea me-2"></i> Voting Requests
+                        </a>
+                        <a class="list-group-item list-group-item-action" id="transactions-tab" data-bs-toggle="list" href="#transactions" role="tab">
+                            <i class="fas fa-exchange-alt me-2"></i> Transactions
+                        </a>
+                        <a class="list-group-item list-group-item-action" id="wallet-tab" data-bs-toggle="list" href="#wallet" role="tab">
+                            <i class="fas fa-wallet me-2"></i> Wallet
+                        </a>
+                        <a class="list-group-item list-group-item-action" id="settings-tab" data-bs-toggle="list" href="#settings" role="tab">
+                            <i class="fas fa-cog me-2"></i> Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Profile Card -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="https://via.placeholder.com/80" alt="Profile" class="rounded-circle">
+                    </div>
+                    <h5 class="mb-1">John Smith</h5>
+                    <p class="text-muted mb-2">Investor</p>
+                    <div class="d-flex justify-content-center">
+                        <span class="badge bg-success me-2">
+                            <i class="fas fa-star me-1"></i> 4.9
+                        </span>
+                        <span class="badge bg-primary">
+                            <i class="fas fa-medal me-1"></i> Premium
+                        </span>
+                    </div>
+                    <hr>
+                    <div class="text-start">
+                        <p class="mb-1 small">
+                            <i class="fas fa-wallet text-primary me-2"></i> 
+                            <span class="text-muted">Wallet Address:</span>
+                        </p>
+                        <p class="small text-truncate mb-3">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</p>
+                        
+                        <button class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-edit me-1"></i> Edit Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <h3 class="mb-4">Dashboard Overview</h3>
+                    
+                    <!-- Statistics Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card bg-primary text-white h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-white-50">Total Invested</h6>
+                                            <h3 class="mb-0">$24,500</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-white bg-opacity-25 p-2">
+                                            <i class="fas fa-dollar-sign fa-fw"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <i class="fas fa-arrow-up me-1"></i>
+                                        <span>12.5% from last month</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card bg-success text-white h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-white-50">Active Investments</h6>
+                                            <h3 class="mb-0">6</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-white bg-opacity-25 p-2">
+                                            <i class="fas fa-project-diagram fa-fw"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <i class="fas fa-arrow-up me-1"></i>
+                                        <span>2 new this month</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card bg-info text-white h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-white-50">Earned Interest</h6>
+                                            <h3 class="mb-0">$1,245</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-white bg-opacity-25 p-2">
+                                            <i class="fas fa-chart-line fa-fw"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <i class="fas fa-arrow-up me-1"></i>
+                                        <span>8.3% increase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card bg-warning text-white h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="text-white-50">Pending Votes</h6>
+                                            <h3 class="mb-0">3</h3>
+                                        </div>
+                                        <div class="rounded-circle bg-white bg-opacity-25 p-2">
+                                            <i class="fas fa-vote-yea fa-fw"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        <span>Requires attention</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <!-- Portfolio Performance Chart -->
+                        <div class="col-lg-8">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Portfolio Performance</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="portfolio-chart" style="height: 300px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Investment Distribution Chart -->
+                        <div class="col-lg-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">Investment Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="distribution-chart" style="height: 300px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- My Investments Tab -->
+                <div class="tab-pane fade" id="investments" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0">My Investments</h3>
+                        <a href="{{ url_for('main.projects') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> New Investment
+                        </a>
+                    </div>
+                    
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Project</th>
+                                            <th>Category</th>
+                                            <th>Invested</th>
+                                            <th>Interest Rate</th>
+                                            <th>Term</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded p-2 me-2">
+                                                        <i class="fas fa-solar-panel"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">Solar Farm Expansion</div>
+                                                        <div class="small text-muted">by SunPower Energy</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-danger">Energy</span></td>
+                                            <td>$5,000</td>
+                                            <td>6.8%</td>
+                                            <td>48 months</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">Details</button>
+                                                    <button class="btn btn-outline-info">Votes</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-success text-white rounded p-2 me-2">
+                                                        <i class="fas fa-seedling"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">Vertical Farming Facility</div>
+                                                        <div class="small text-muted">by Urban Harvest</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-success">Agriculture</span></td>
+                                            <td>$3,500</td>
+                                            <td>7.5%</td>
+                                            <td>30 months</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">Details</button>
+                                                    <button class="btn btn-outline-info">Votes</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-info text-white rounded p-2 me-2">
+                                                        <i class="fas fa-microscope"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">Medical Diagnostic Tool</div>
+                                                        <div class="small text-muted">by MediTech Solutions</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-info text-dark">Healthcare</span></td>
+                                            <td>$4,000</td>
+                                            <td>9.5%</td>
+                                            <td>24 months</td>
+                                            <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">Details</button>
+                                                    <button class="btn btn-outline-info">Votes</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-warning text-white rounded p-2 me-2">
+                                                        <i class="fas fa-building"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">Eco-Friendly Apartments</div>
+                                                        <div class="small text-muted">by Sustainable Homes Inc.</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-warning text-dark">Real Estate</span></td>
+                                            <td>$7,500</td>
+                                            <td>7.2%</td>
+                                            <td>36 months</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">Details</button>
+                                                    <button class="btn btn-outline-info">Votes</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-secondary text-white rounded p-2 me-2">
+                                                        <i class="fas fa-graduation-cap"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">Interactive Learning Platform</div>
+                                                        <div class="small text-muted">by EduTech Innovations</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-secondary">Education</span></td>
+                                            <td>$2,500</td>
+                                            <td>8.0%</td>
+                                            <td>24 months</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">Details</button>
+                                                    <button class="btn btn-outline-info">Votes</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded p-2 me-2">
+                                                        <i class="fas fa-robot"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">AI-Powered Agriculture System</div>
+                                                        <div class="small text-muted">by Green Tech Solutions</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-primary">Technology</span></td>
+                                            <td>$2,000</td>
+                                            <td>8.5%</td>
+                                            <td>18 months</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">Details</button>
+                                                    <button class="btn btn-outline-info">Votes</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Voting Requests Tab -->
+                <div class="tab-pane fade" id="voting" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0">Voting Requests</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary active">All</button>
+                            <button class="btn btn-outline-primary">Pending</button>
+                            <button class="btn btn-outline-primary">Completed</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Votes Cards -->
+                    <div class="row g-4 mb-4">
+                        <!-- Vote Card 1 -->
+                        <div class="col-12">
+                            <div class="card shadow-sm border-warning">
+                                <div class="card-header bg-white d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="mb-0">Fund Usage Request</h5>
+                                        <span class="badge bg-warning text-dark">Action Required</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">Expires in: 3 days</div>
+                                        <div class="small text-muted">Created: Mar 18, 2025</div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <div class="bg-primary text-white rounded p-2 me-2">
+                                                        <i class="fas fa-robot"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">AI-Powered Agriculture System</div>
+                                                        <div class="text-muted">by Green Tech Solutions</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-3 border-bottom pb-3">
+                                                    <h6>Fund Usage Purpose:</h6>
+                                                    <p>We need to withdraw $25,000 to purchase key hardware components for the prototype development, including sensors, microcontrollers, and actuators. This is in line with our project timeline and budget as outlined in the business plan.</p>
+                                                    <p>The funds will be used as follows:</p>
+                                                    <ul>
+                                                        <li>Environmental sensors: $8,000</li>
+                                                        <li>Industrial-grade actuators: $10,000</li>
+                                                        <li>Custom PCB fabrication: $4,000</li>
+                                                        <li>Testing equipment: $3,000</li>
+                                                    </ul>
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-file-pdf me-1"></i> View Supporting Documents
+                                                    </a>
+                                                </div>
+                                                
+                                                <div>
+                                                    <h6>Voting Status:</h6>
+                                                    <div class="progress mb-2" style="height: 20px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">Approved: 40%</div>
+                                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 10%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">Rejected: 10%</div>
+                                                    </div>
+                                                    <div class="small">10 of 25 investors have voted (Minimum required: 60% approval)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6>Request Details</h6>
+                                                    <hr>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Amount:</span>
+                                                        <span class="fw-bold">$25,000</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Interest Payment:</span>
+                                                        <span class="fw-bold">$1,250</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Voting Deadline:</span>
+                                                        <span>Mar 23, 2025</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Your Share:</span>
+                                                        <span>8.0%</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="text-muted">Your Interest:</span>
+                                                        <span>$100</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success">
+                                                    <i class="fas fa-check me-1"></i> Approve
+                                                </button>
+                                                <button class="btn btn-danger">
+                                                    <i class="fas fa-times me-1"></i> Reject
+                                                </button>
+                                                <button class="btn btn-outline-secondary">
+                                                    <i class="fas fa-question-circle me-1"></i> Ask Questions
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Vote Card 2 -->
+                        <div class="col-12">
+                            <div class="card shadow-sm border-warning">
+                                <div class="card-header bg-white d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="mb-0">Fund Usage Request</h5>
+                                        <span class="badge bg-warning text-dark">Action Required</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">Expires in: 5 days</div>
+                                        <div class="small text-muted">Created: Mar 15, 2025</div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <div class="bg-info text-white rounded p-2 me-2">
+                                                        <i class="fas fa-microscope"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">Medical Diagnostic Tool</div>
+                                                        <div class="text-muted">by MediTech Solutions</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-3 border-bottom pb-3">
+                                                    <h6>Fund Usage Purpose:</h6>
+                                                    <p>We are requesting $40,000 to hire specialized AI engineers for algorithm development and to procure medical imaging datasets for training the diagnostic model. This is a critical phase in our development roadmap.</p>
+                                                    <p>The funds will be used as follows:</p>
+                                                    <ul>
+                                                        <li>AI Engineer contractor (3 months): $30,000</li>
+                                                        <li>Medical imaging dataset licenses: $8,000</li>
+                                                        <li>Cloud computing resources: $2,000</li>
+                                                    </ul>
+                                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-file-pdf me-1"></i> View Supporting Documents
+                                                    </a>
+                                                </div>
+                                                
+                                                <div>
+                                                    <h6>Voting Status:</h6>
+                                                    <div class="progress mb-2" style="height: 20px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: 35%;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">Approved: 35%</div>
+                                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 5%;" aria-valuenow="5" aria-valuemin="0" aria-valuemax="100">Rejected: 5%</div>
+                                                    </div>
+                                                    <div class="small">8 of 20 investors have voted (Minimum required: 60% approval)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h6>Request Details</h6>
+                                                    <hr>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Amount:</span>
+                                                        <span class="fw-bold">$40,000</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Interest Payment:</span>
+                                                        <span class="fw-bold">$2,000</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Voting Deadline:</span>
+                                                        <span>Mar 25, 2025</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Your Share:</span>
+                                                        <span>10.0%</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="text-muted">Your Interest:</span>
+                                                        <span>$200</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success">
+                                                    <i class="fas fa-check me-1"></i> Approve
+                                                </button>
+                                                <button class="btn btn-danger">
+                                                    <i class="fas fa-times me-1"></i> Reject
+                                                </button>
+                                                <button class="btn btn-outline-secondary">
+                                                    <i class="fas fa-question-circle me-1"></i> Ask Questions
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Previously Completed Vote -->
+                        <div class="col-12">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-white d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="mb-0">Fund Usage Request</h5>
+                                        <span class="badge bg-success">Approved</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">Completed: Mar 10, 2025</div>
+                                        <div class="small text-muted">Created: Mar 3, 2025</div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-warning text-white rounded p-2 me-2">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Eco-Friendly Apartments</div>
+                                            <div class="text-muted">by Sustainable Homes Inc.</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="mb-2"><strong>Purpose:</strong> Land acquisition payment for the apartment complex site. First installment of $100,000.</p>
+                                            <div>
+                                                <strong>Voting Result:</strong>
+                                                <div class="progress mb-2" style="height: 20px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">Approved: 75%</div>
+                                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 15%;" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">Rejected: 15%</div>
+                                                </div>
+                                                <div class="small">18 of 20 investors voted (Your vote: Approved)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card">
+                                                <div class="card-body bg-light">
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Amount:</span>
+                                                        <span class="fw-bold">$100,000</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-2">
+                                                        <span class="text-muted">Interest Paid:</span>
+                                                        <span class="fw-bold">$5,000</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="text-muted">Your Interest:</span>
+                                                        <span>$375</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Other tabs would follow the same pattern -->
+                <div class="tab-pane fade" id="transactions" role="tabpanel">
+                    <h3 class="mb-4">Transaction History</h3>
+                    <!-- Transaction content would go here -->
+                </div>
+                
+                <div class="tab-pane fade" id="wallet" role="tabpanel">
+                    <h3 class="mb-4">Wallet</h3>
+                    <!-- Wallet content would go here -->
+                </div>
+                
+                <div class="tab-pane fade" id="settings" role="tabpanel">
+                    <h3 class="mb-4">Account Settings</h3>
+                    <!-- Settings content would go here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Portfolio Performance Chart
+        var portfolioOptions = {
+            series: [{
+                name: 'Investment Value',
+                data: [10000, 12000, 15000, 16500, 18000, 21000, 24500]
+            }, {
+                name: 'Principal Invested',
+                data: [10000, 12000, 14000, 15000, 17000, 19000, 22000]
+            }],
+            chart: {
+                type: 'area',
+                height: 300,
+                toolbar: {
+                    show: false
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            xaxis: {
+                categories: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+            },
+            tooltip: {
+                x: {
+                    format: 'MM'
+                },
+            },
+            colors: ['#4e73df', '#1cc88a'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.2,
+                    stops: [0, 90, 100]
+                }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'right'
+            }
+        };
+
+        var portfolioChart = new ApexCharts(document.querySelector("#portfolio-chart"), portfolioOptions);
+        portfolioChart.render();
+        
+        // Investment Distribution Chart
+        var distributionOptions = {
+            series: [30, 25, 15, 12, 10, 8],
+            chart: {
+                type: 'donut',
+                height: 300
+            },
+            labels: ['Real Estate', 'Energy', 'Technology', 'Healthcare', 'Education', 'Agriculture'],
+            colors: ['#f6c23e', '#e74a3b', '#4e73df', '#36b9cc', '#858796', '#1cc88a'],
+            legend: {
+                position: 'bottom'
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true
+                            },
+                            value: {
+                                show: true,
+                                formatter: function(val) {
+                                    return val + '%';
+                                }
+                            },
+                            total: {
+                                show: true,
+                                label: 'Total',
+                                formatter: function(w) {
+                                    return '100%';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var distributionChart = new ApexCharts(document.querySelector("#distribution-chart"), distributionOptions);
+        distributionChart.render();
+    });
+</script>
+{% endblock %}

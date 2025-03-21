@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Register - BlockFund{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create an Account</h4>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="nav nav-pills mb-4 nav-justified" id="accountTypeTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="investor-tab" data-bs-toggle="pill" data-bs-target="#investor" type="button" role="tab">
+                                <i class="fas fa-user-tie me-2"></i>Investor
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="company-tab" data-bs-toggle="pill" data-bs-target="#company" type="button" role="tab">
+                                <i class="fas fa-building me-2"></i>Company
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="accountTypeTabContent">
+                        <!-- Investor Registration Form -->
+                        <div class="tab-pane fade show active" id="investor" role="tabpanel">
+                            <form method="POST" action="">
+                                <div class="mb-3">
+                                    <label for="investor_email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control" id="investor_email" name="email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="investor_name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="investor_name" name="name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="investor_wallet" class="form-label">Wallet Address</label>
+                                    <input type="text" class="form-control" id="investor_wallet" name="wallet_address" required>
+                                    <div class="form-text">Your blockchain wallet address for receiving funds</div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label for="investor_password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="investor_password" name="password" required>
+                                    </div>
+                                    <div class="col">
+                                        <label for="investor_confirm_password" class="form-label">Confirm Password</label>
+                                        <input type="password" class="form-control" id="investor_confirm_password" name="confirm_password" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="investor_terms" name="terms" required>
+                                    <label class="form-check-label" for="investor_terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100">Register as Investor</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Company Registration Form -->
+                        <div class="tab-pane fade" id="company" role="tabpanel">
+                            <form method="POST" action="">
+                                <div class="mb-3">
+                                    <label for="company_email" class="form-label">Business Email</label>
+                                    <input type="email" class="form-control" id="company_email" name="email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="company_name" class="form-label">Company Name</label>
+                                    <input type="text" class="form-control" id="company_name" name="company_name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="company_registration" class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" id="company_registration" name="registration_number" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="company_wallet" class="form-label">Wallet Address</label>
+                                    <input type="text" class="form-control" id="company_wallet" name="wallet_address" required>
+                                    <div class="form-text">Your blockchain wallet address for transactions</div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label for="company_password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="company_password" name="password" required>
+                                    </div>
+                                    <div class="col">
+                                        <label for="company_confirm_password" class="form-label">Confirm Password</label>
+                                        <input type="password" class="form-control" id="company_confirm_password" name="confirm_password" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="company_description" class="form-label">Company Description</label>
+                                    <textarea class="form-control" id="company_description" name="description" rows="3" required></textarea>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="company_terms" name="terms" required>
+                                    <label class="form-check-label" for="company_terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100">Register as Company</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    Already have an account? <a href="{{ url_for('main.login') }}">Login here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
