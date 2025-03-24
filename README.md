@@ -1,5 +1,7 @@
 使用說明書
 
+metamask跳出來的時候不要忘記設定成sepolia
+
 1. 先下載下來
 
 2. cd fundRaisingPlatform
