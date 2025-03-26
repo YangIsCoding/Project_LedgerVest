@@ -10,11 +10,11 @@ metamask跳出來的時候不要忘記設定成sepolia
 
 4. touch .env
 
-    4. go to ![](https://www.alchemy.com/) 創建一個帳戶，進入之後按create new app，填一填。choose chain 選ethereum。Activate service 什麼都不用選直接點create app. 複製Network URL
+    4. go to ![](https://www.alchemy.com/) 創建一個帳戶，進入之後按create new app，填一填。choose chain 選ethereum。Activate service 什麼都不用選直接點create app. 複製Network URL(sepolia的)
 
 5. SEPOLIA_RPC=??? (這個就是以上的network URL 直接貼上)
 
-6. PRIVATE_KEY=???（去metamask點帳戶詳情，把他複製到.env）
+6. PRIVATE_KEY=???（去metamask點帳戶詳情，把他複製到.env）（要前綴0x）
 
 7. npx hardhat compile
 
@@ -52,3 +52,4 @@ metamask跳出來的時候不要忘記設定成sepolia
 21. 點擊那一串地址
 
 22. 輸入大於minimum 的錢，contribute看看
+
