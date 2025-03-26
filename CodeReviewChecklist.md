@@ -1,1 +1,0 @@
-our team’s code review checklist
