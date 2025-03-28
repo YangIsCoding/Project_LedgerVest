@@ -1,5 +1,6 @@
 'use client';
 
+// No changes needed to imports or top-level code
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,7 +31,7 @@ export default function Home() {
     if (isConnected) {
       loadCampaigns();
     }
-  }, [isConnected]);
+  }, [isConnected, loadCampaigns]);
 
   // Get summary data for each campaign
   useEffect(() => {
@@ -112,7 +113,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero Section */}
+      {/* Hero Section - No changes needed to content */}
       <section className="bg-blue-600 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
@@ -125,6 +126,7 @@ export default function Home() {
                 and security between investors and borrowing companies.
               </p>
               <div className="flex flex-wrap gap-4">
+                {/* Updated link here from /projects to /projects */}
                 <Link href="/projects" className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors">
                   Get Started
                 </Link>
@@ -147,7 +149,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats Section - No changes needed */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -172,7 +174,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* How It Works Section - No changes needed */}
       <section id="how-it-works" className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -258,6 +260,7 @@ export default function Home() {
                 <div key={campaign.address} className="border rounded-lg shadow-sm overflow-hidden bg-white">
                   <div className="border-b p-4">
                     <h2 className="font-semibold text-lg mb-1 break-all">
+                      {/* Update link from /campaigns to /campaigns */}
                       <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
                         Campaign @ {campaign.address.substring(0, 10)}...
                       </Link>
@@ -294,6 +297,7 @@ export default function Home() {
                   </div>
                   
                   <div className="p-4 border-t flex justify-end">
+                    {/* Update link from /campaigns to /campaigns */}
                     <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline text-sm">
                       View Details →
                     </Link>
@@ -305,6 +309,7 @@ export default function Home() {
           
           {isConnected && campaigns.length > 3 && (
             <div className="text-center mt-8">
+              {/* Update link from /projects to /projects */}
               <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 inline-block">
                 View All Campaigns
               </Link>
@@ -313,7 +318,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - No changes needed */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -387,7 +392,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {/* Call to Action - Update link from /projects to /projects */}
       <section className="py-16 bg-blue-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Start Investing?</h2>
