@@ -1,55 +1,235 @@
-使用說明書
+# BlockFund - Blockchain Investment Platform
 
-metamask跳出來的時候不要忘記設定成sepolia
+BlockFund is a decentralized investment and fundraising platform built on Ethereum that allows investors to contribute to campaigns and campaign managers to raise funds with transparency and security through smart contracts.
 
-1. 先下載下來
+![BlockFund Platform](https://placeholder-image.com/blockchain-platform.png)
 
-2. cd fundRaisingPlatform
+## 🚀 Features
 
-3. npm i
+- **Decentralized Fundraising**: Create and manage fundraising campaigns on the blockchain
+- **MetaMask Integration**: Seamless wallet connection for transactions
+- **Smart Contract Security**: All funds are managed through secure smart contracts
+- **Transparent Fund Management**: View campaign balances, contributors, and transaction history
+- **Democratic Decision Making**: Vote on fund withdrawal requests
+- **Multi-contributor Support**: Multiple people can contribute to a single campaign
 
-4. touch .env
+## 🔧 Technologies
 
-    4. go to ![](https://www.alchemy.com/) 創建一個帳戶，進入之後按create new app，填一填。choose chain 選ethereum。Activate service 什麼都不用選直接點create app. 複製Network URL(sepolia的)
+- **Frontend**: Next.js, React, TypeScript, TailwindCSS
+- **Blockchain**: Ethereum (Sepolia Testnet), Solidity, Hardhat
+- **Authentication**: MetaMask wallet connection
+- **State Management**: React Context API
+- **Development Tools**: Hardhat, ethers.js
 
-5. SEPOLIA_RPC=??? (這個就是以上的network URL 直接貼上)
+## 📋 Prerequisites
 
-6. PRIVATE_KEY=???（去metamask點帳戶詳情，把他複製到.env）（要前綴0x）
+- Node.js (v18+)
+- npm or yarn
+- MetaMask browser extension
+- Sepolia testnet ETH (for testing)
 
-7. npx hardhat compile
+## 🛠️ Setup Instructions
 
-8. npx hardhat test(先在本地跑跑看，這個不花sepolia eth)
+### 1. Clone the Repository
 
-9. npx hardhat run scripts/deploy.js --network sepolia（這個就是要部署到sepolia了，然後會自動將abi複製到前端，沒事你就先照著做就行了）
+```bash
+git clone https://github.com/your-username/blockchain-investment-platform.git
+cd blockchain-investment-platform
+```
 
-10. copy CampaignFactory address(部署後是部署一個factory，關於factory的概念開會會提到。這時候會吐出一個factory address複製他)
+### 2. Smart Contract Deployment
 
-11. go to frontend
+```bash
+# Navigate to the blockchain folder
+cd blockchain
 
-12. npm i
+# Install dependencies
+npm install
 
-13. go back to fundRaising
+# Create .env file
+touch .env
+```
 
-14. npx hardhat console --network sepolia(這個就是用指令直接在factory裡面創面新campaign)
+Add the following to your `.env` file:
+```
+SEPOLIA_RPC=<your_alchemy_sepolia_url>
+PRIVATE_KEY=<your_metamask_private_key>  # Include 0x prefix
+```
+
+To get your Alchemy Sepolia URL:
+1. Create an account at [Alchemy](https://www.alchemy.com/)
+2. Create a new app and select Ethereum/Sepolia
+3. Copy the HTTP API key
+
+```bash
+# Compile the smart contracts
+npx hardhat compile
+
+# Run tests locally (no real ETH used)
+npx hardhat test
+
+# Deploy to Sepolia testnet
+npx hardhat run scripts/deploy.js --network sepolia
+```
+
+After deployment, you'll see a CampaignFactory address in the console. Note this address.
+
+### 3. Frontend Setup
+
+```bash
+# Navigate to the web folder
+cd ../web
+
+# Install dependencies
+npm install
+
+# Create/update the contract address file
+mkdir -p src/utils/abis
+```
+
+Create or update `src/utils/abis/contract-address.json`:
+```json
+{
+  "CampaignFactory": "YOUR_COPIED_FACTORY_ADDRESS"
+}
+```
+
+Ensure the ABI files are in place:
+```bash
+# If they weren't copied automatically
+cp ../blockchain/artifacts/contracts/Campaign.sol/Campaign.json src/utils/abis/
+cp ../blockchain/artifacts/contracts/Campaign.sol/CampaignFactory.json src/utils/abis/
+```
+
+### 4. Start the Application
+
+```bash
+# Start the development server
+npm run dev
+```
+
+Visit `http://localhost:3000` in your browser.
+
+## 🧩 Project Structure
+
+```
+blockchain/                # Smart contract code
+├── contracts/            # Solidity contracts
+│   └── Campaign.sol      # Main contract
+├── scripts/              # Deployment scripts
+├── test/                 # Contract tests
+└── hardhat.config.js     # Hardhat configuration
+
+web/                      # Frontend application
+├── public/               # Static assets
+├── src/
+│   ├── app/              # Next.js pages
+│   │   ├── page.tsx      # Homepage
+│   │   ├── projects/     # Projects listing
+│   │   ├── campaigns/    # Campaign details
+│   │   └── create/       # Create campaign
+│   ├── components/       # React components
+│   ├── lib/              # Library code
+│   │   └── context/      # React contexts
+│   └── utils/            # Utility functions
+│       ├── abis/         # Contract ABIs
+│       └── ethers.js     # Ethereum utilities
+└── next.config.js        # Next.js configuration
+```
+
+## 📝 Usage Guide
+
+### Connecting Your Wallet
+
+1. **Set MetaMask to Sepolia**: Make sure your MetaMask is connected to the Sepolia testnet
+2. **Get Sepolia ETH**: Request test ETH from a [Sepolia faucet](https://sepoliafaucet.com/)
+3. **Connect Wallet**: Click the "Connect Wallet" button in the top-right corner
+
+### Creating a Campaign
+
+1. Click "Create Campaign" button
+2. Set the minimum contribution amount (in ETH)
+3. Submit and confirm the transaction in MetaMask
+4. Your campaign will appear in the campaigns list once mined
+
+### Contributing to a Campaign
+
+1. Browse available campaigns
+2. Click on a campaign to view details
+3. Enter contribution amount (must be ≥ minimum contribution)
+4. Click "Contribute" and confirm in MetaMask
+
+### Creating a Spending Request (Campaign Managers)
+
+1. Navigate to your campaign
+2. Create a new spending request with:
+   - Description of the purpose
+   - Amount in ETH
+   - Recipient address
+3. Confirm transaction in MetaMask
+
+### Approving Requests (Contributors)
+
+1. Navigate to a campaign you've contributed to
+2. View the "Spending Requests" section
+3. Click "Approve" on requests you support
+4. Confirm transaction in MetaMask
+
+### Finalizing Requests (Campaign Managers)
+
+1. After receiving sufficient approvals (>50% of contributors)
+2. Click "Finalize" on the request
+3. Confirm transaction in MetaMask
+4. Funds will be transferred to the recipient
+
+## 🔗 Blockchain Integration Details
+
+### Smart Contracts
+
+The platform uses two main contracts:
+
+1. **CampaignFactory**: Creates new campaigns and tracks all deployed campaigns
+2. **Campaign**: Handles individual campaign logic including:
+   - Contributions
+   - Spending requests
+   - Approvals
+   - Fund transfers
+
+### Wallet Connection
+
+The platform connects to MetaMask or other Ethereum wallets via the Web3 provider API. Key operations:
+
+- **Read Operations**: View campaign details, balances, and request status
+- **Write Operations**: Create campaigns, contribute funds, approve requests, finalize transfers
+
+### Transaction Flow
+
+1. User initiates action (create, contribute, approve, etc.)
+2. Wallet prompts for transaction confirmation
+3. Transaction is sent to the Ethereum network
+4. UI updates when transaction is mined
+
+## 🧪 Development Notes
+
+### Sepolia Testnet
+
+All development and testing should be done on the Sepolia testnet to avoid using real ETH.
+
+### Local Development
+
+For local development without blockchain interaction:
+- Comment out blockchain calls in `useWallet` hook
+- Use mock data for testing UI
+
+### Troubleshooting
+
+- **Transaction Errors**: Ensure you have sufficient Sepolia ETH for gas
+- **Contract Interactions**: Check that ABI files match deployed contracts
+- **MetaMask Connection**: Reset MetaMask account if experiencing connection issues
 
 
-15. > const factory = await ethers.getContractAt("CampaignFactory", "your_factory_address");
+## 🤝 Contributing
 
-16. > await factory.createCampaign(ethers.parseEther("0.0000000000000001"));
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-
-
-以上是調用smart contract的createCampaign()來創造一個Campaign, 他需要一個參數是設定最小貢獻（要大於這筆金額才可以成為contributor）
-
-17. > await factory.getDeployedCampaigns();
-
-18. npm run dev
-
-19. go to  http://localhost:3000
-
-20. see if 已部署的 Campaigns: 下面有東西
-
-21. 點擊那一串地址
-
-22. 輸入大於minimum 的錢，contribute看看
-
+## 📧 Contact
