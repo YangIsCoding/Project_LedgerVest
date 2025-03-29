@@ -1,4 +1,0 @@
-.exit
-await factory.getDeployedCampaigns();
-await factory.createCampaign(ethers.parseEther("0.0000000000000001"));
-const factory = await ethers.getContractAt("CampaignFactory", "0x5410Da8C79f1E8619B149F0A638b6275c824467d");
