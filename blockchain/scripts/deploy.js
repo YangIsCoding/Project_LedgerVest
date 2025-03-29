@@ -13,11 +13,11 @@ async function main() {
   console.log(`✅ CampaignFactory deployed at: ${factoryAddress}`);
 
   // ✅ 儲存 ABI 與合約地址，供前端使用
-  const abiDir = path.join(__dirname, "../../frontend/src/utils/abis");
+  const abiDir = path.join(__dirname, "../../web/src/utils/abis");
   if (!fs.existsSync(abiDir)) {
     fs.mkdirSync(abiDir, { recursive: true });
   }
-
+  console.log(abiDir);
   fs.writeFileSync(
     path.join(abiDir, "contract-address.json"),
     JSON.stringify({ CampaignFactory: factoryAddress }, null, 2)

@@ -51,12 +51,14 @@ touch .env
 ```
 
 Add the following to your `.env` file:
-```
+
+```env
 SEPOLIA_RPC=<your_alchemy_sepolia_url>
 PRIVATE_KEY=<your_metamask_private_key>  # Include 0x prefix
 ```
 
 To get your Alchemy Sepolia URL:
+
 1. Create an account at [Alchemy](https://www.alchemy.com/)
 2. Create a new app and select Ethereum/Sepolia
 3. Copy the HTTP API key
@@ -73,6 +75,7 @@ npx hardhat run scripts/deploy.js --network sepolia
 ```
 
 After deployment, you'll see a CampaignFactory address in the console. Note this address.
+You should see `Campaign.json`, `CampaignFactory.json`, `contract-address.json` being copied to `web/src/utils/abis/`
 
 ### 3. Frontend Setup
 
@@ -82,21 +85,19 @@ cd ../web
 
 # Install dependencies
 npm install
-
-# Create/update the contract address file
-mkdir -p src/utils/abis
 ```
 
-Create or update `src/utils/abis/contract-address.json`:
+Create or update `src/utils/abis/contract-address.json` if necessary:
+
 ```json
 {
   "CampaignFactory": "YOUR_COPIED_FACTORY_ADDRESS"
 }
 ```
 
-Ensure the ABI files are in place:
+Ensure the ABI files are in place (if they weren't copied automatically):
+
 ```bash
-# If they weren't copied automatically
 cp ../blockchain/artifacts/contracts/Campaign.sol/Campaign.json src/utils/abis/
 cp ../blockchain/artifacts/contracts/Campaign.sol/CampaignFactory.json src/utils/abis/
 ```
@@ -112,7 +113,7 @@ Visit `http://localhost:3000` in your browser.
 
 ## 🧩 Project Structure
 
-```
+```bash
 blockchain/                # Smart contract code
 ├── contracts/            # Solidity contracts
 │   └── Campaign.sol      # Main contract

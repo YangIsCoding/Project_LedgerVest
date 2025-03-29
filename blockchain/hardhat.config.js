@@ -18,7 +18,7 @@ const path = require("path");
 
 task("copy-abi", "Copies ABI files to frontend", async () => {
   console.log("\n🚀 Copying ABI files to frontend...");
-  const abiDir = path.join(__dirname, "../frontend/src/utils/abis");
+  const abiDir = path.join(__dirname, "../web/src/utils/abis");
   if (!fs.existsSync(abiDir)) {
     fs.mkdirSync(abiDir, { recursive: true });
   }

@@ -3,5 +3,4 @@ artifacts
 cache
 node_modules
 typechain-types
-package-lock.json
 *:Zone.Identifier
