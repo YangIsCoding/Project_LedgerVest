@@ -32,3 +32,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Optional: Zone identifiers (from Windows)
+*:Zone.Identifier

@@ -34,10 +34,10 @@ export async function getFactoryContract() {
  */
 export async function getFactoryContractWithSigner() {
   const provider = getProvider();
-  
+
   // Request account access
-  await provider.send("eth_requestAccounts", []); 
-  
+  await provider.send("eth_requestAccounts", []);
+
   // In ethers v6, getSigner() is async
   const signer = await provider.getSigner();
 
@@ -63,7 +63,7 @@ export async function getCampaignContract(address) {
 export async function getCampaignContractWithSigner(address) {
   const provider = getProvider();
   await provider.send("eth_requestAccounts", []);
-  
+
   // In ethers v6, getSigner() is async
   const signer = await provider.getSigner();
 
