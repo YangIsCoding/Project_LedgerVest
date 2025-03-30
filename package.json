@@ -1,14 +1,23 @@
 {
-  "name": "hardhat-tutorial",
+  "name": "ledgervest",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "cd web && next dev",
+    "build": "cd web && next build",
+    "start": "cd web && next start"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.3",
+    "tailwindcss": "^4",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-ignition": "^0.15.10",
@@ -31,6 +40,15 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "@metamask/providers": "^21.0.0",
+    "axios": "^1.8.4",
+    "date-fns": "^4.1.0",
+    "ethers": "^6.13.5",
+    "next": "15.2.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
+    "recharts": "^2.15.1",
     "dotenv": "^16.4.7"
   }
 }
