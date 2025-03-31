@@ -1,0 +1,21 @@
+stages:
+  - deploy
+
+deploy-prod:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh rsync
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "📤 Syncing built app to VCM..."
+    - rsync -avz web/.next $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/web/
+    - rsync -avz web/public $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/web/
+    - rsync -avz package*.json $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
+    - echo "🔁 Restarting PM2 on server..."
+    - ssh $DEPLOY_USER@$DEPLOY_HOST 'cd ~/fintech512-project_ledgervest && pm2 restart app || pm2 start npm --name app -- start && pm2 save'
+  only:
+    - main

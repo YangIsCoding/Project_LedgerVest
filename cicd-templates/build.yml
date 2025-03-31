@@ -1,0 +1,18 @@
+stages:
+  - build
+
+build-app:
+  stage: build
+  image: node:18
+  script:
+    - echo "📦 Installing dependencies..."
+    - npm install
+    - echo "🚧 Building Next.js app..."
+    - npm run build
+  artifacts:
+    paths:
+      - web/.next
+      - web/public
+      - web/package.json
+      - web/package-lock.json
+    expire_in: 1 hour

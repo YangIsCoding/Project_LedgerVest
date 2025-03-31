@@ -1,0 +1,9 @@
+stages:
+  - test
+  - build
+  - deploy
+include:
+  - local: 'cicd-templates/test.yml'
+  - local: 'cicd-templates/build.yml'
+  - local: 'cicd-templates/deploy.yml'
+  - template: Security/SAST.gitlab-ci.yml
