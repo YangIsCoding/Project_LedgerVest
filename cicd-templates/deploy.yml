@@ -16,6 +16,6 @@ deploy-prod:
     - rsync -avz web/public $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/web/
     - rsync -avz package*.json $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
     - echo "🔁 Restarting PM2 on server..."
-    - ssh $DEPLOY_USER@$DEPLOY_HOST 'cd ~/fintech512-project_ledgervest && pm2 restart app || pm2 start npm --name app -- start && pm2 save'
+    - ssh $DEPLOY_USER@$DEPLOY_HOST 'export PATH=$PATH:/home/cw555/.nvm/versions/node/v18.20.8/bin && cd ~/fintech512-project_ledgervest && pm2 restart app || pm2 start npm --name app -- start && pm2 save'
   only:
     - main
