@@ -30,15 +30,14 @@ BlockFund is a decentralized investment and fundraising platform built on Ethere
 
 ## 🛠️ Setup Instructions
 
-**important** 
-For frontend/backend development, there's no need to rebuild the blockchain
-just directly run the belowing and you should see the webpage at localhost:3000
+**important**  
+For frontend/backend development, there's no need to rebuild the blockchain  
+just directly run the belowing and you should see the webpage at localhost:3000  
 
 ```bash
 npm install
 npm run dev
 ```
-
 
 ## To build the whole project from scratch
 

@@ -16,3 +16,5 @@ build-app:
       - web/package.json
       - web/package-lock.json
     expire_in: 1 hour
+  only:
+    - main
