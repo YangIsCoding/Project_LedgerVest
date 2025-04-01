@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useWallet } from '@/lib/context/WalletContext';
-import { getCampaignContract } from '@/lib/utils/ethers';
+import { getCampaignContract } from '@/utils/ethers';
 import { FaUsers, FaProjectDiagram, FaCoins, FaUserPlus, 
          FaFileContract, FaHandHoldingUsd, FaChartLine, 
          FaShieldAlt, FaVoteYea, FaWallet, FaStar, 
