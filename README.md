@@ -30,27 +30,36 @@ BlockFund is a decentralized investment and fundraising platform built on Ethere
 
 ## 🛠️ Setup Instructions
 
+**important** 
+For frontend/backend development, there's no need to rebuild the blockchain
+just directly run the belowing and you should see the webpage at localhost:3000
+
+```bash
+npm install
+npm run dev
+```
+
+
+## To build the whole project from scratch
+
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/blockchain-investment-platform.git
-cd blockchain-investment-platform
+git clone https://gitlab.oit.duke.edu/cw555/fintech512-project_ledgervest.git
+cd fintech512-project_ledgervest
+# Install dependencies
+npm install
 ```
 
 ### 2. Smart Contract Deployment
 
 ```bash
-# Navigate to the blockchain folder
-cd blockchain
-
-# Install dependencies
-npm install
-
 # Create .env file
 touch .env
 ```
 
 Add the following to your `.env` file:
+(remember to add `.env` to `.gitignore` to prevent pushing private key to repo)
 
 ```env
 SEPOLIA_RPC=<your_alchemy_sepolia_url>
@@ -65,6 +74,7 @@ To get your Alchemy Sepolia URL:
 
 ```bash
 # Compile the smart contracts
+cd blockchain
 npx hardhat compile
 
 # Run tests locally (no real ETH used)
@@ -78,13 +88,11 @@ After deployment, you'll see a CampaignFactory address in the console. Note this
 You should see `Campaign.json`, `CampaignFactory.json`, `contract-address.json` being copied to `web/src/utils/abis/`
 
 ### 3. Frontend Setup
+below should be all done if correctly deployed the smart contract
 
 ```bash
 # Navigate to the web folder
 cd ../web
-
-# Install dependencies
-npm install
 ```
 
 Create or update `src/utils/abis/contract-address.json` if necessary:
