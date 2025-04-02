@@ -6,6 +6,8 @@ build-app:
   image: node:18
   script:
     - echo "📦 Installing dependencies..."
+    - rm -rf node_modules 
+    - rm -rf web/.next
     - npm install
     - echo "🚧 Building Next.js app..."
     - npm run build
@@ -18,3 +20,4 @@ build-app:
     expire_in: 1 hour
   only:
     - main
+  cache: {}  # Explicitly disable cache
