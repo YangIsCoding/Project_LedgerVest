@@ -1,8 +1,8 @@
-# BlockFund - Blockchain Investment Platform
+# LedgerVest - Blockchain Investment Platform
 
-BlockFund is a decentralized investment and fundraising platform built on Ethereum that allows investors to contribute to campaigns and campaign managers to raise funds with transparency and security through smart contracts.
+LedgerVest is a decentralized investment and fundraising platform built on Ethereum that allows investors to contribute to campaigns and campaign managers to raise funds with transparency and security through smart contracts.
 
-![BlockFund Platform](https://placeholder-image.com/blockchain-platform.png)
+![LedgerVest Platform](https://placeholder-image.com/blockchain-platform.png)
 
 ## 🚀 Features
 
