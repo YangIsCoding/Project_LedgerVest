@@ -87,6 +87,7 @@ After deployment, you'll see a CampaignFactory address in the console. Note this
 You should see `Campaign.json`, `CampaignFactory.json`, `contract-address.json` being copied to `web/src/utils/abis/`
 
 ### 3. Frontend Setup
+
 below should be all done if correctly deployed the smart contract
 
 ```bash
@@ -226,6 +227,7 @@ All development and testing should be done on the Sepolia testnet to avoid using
 ### Local Development
 
 For local development without blockchain interaction:
+
 - Comment out blockchain calls in `useWallet` hook
 - Use mock data for testing UI
 
@@ -234,7 +236,6 @@ For local development without blockchain interaction:
 - **Transaction Errors**: Ensure you have sufficient Sepolia ETH for gas
 - **Contract Interactions**: Check that ABI files match deployed contracts
 - **MetaMask Connection**: Reset MetaMask account if experiencing connection issues
-
 
 ## 🤝 Contributing
 
