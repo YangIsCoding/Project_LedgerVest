@@ -1,6 +1,5 @@
 'use client';
 
-// No changes needed to imports or top-level code
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,7 +8,7 @@ import { getCampaignContract } from '@/utils/ethers';
 import { FaUsers, FaProjectDiagram, FaCoins, FaUserPlus, 
          FaFileContract, FaHandHoldingUsd, FaChartLine, 
          FaShieldAlt, FaVoteYea, FaWallet, FaStar, 
-         FaBalanceScale, FaFileInvoiceDollar, FaPlus, FaEthereum } from 'react-icons/fa';
+         FaBalanceScale, FaFileInvoiceDollar, FaPlus, FaEthereum, FaUserCircle } from 'react-icons/fa';
 
 // Campaign summary type
 interface CampaignSummary {
@@ -113,7 +112,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero Section - No changes needed to content */}
+      {/* Hero Section - Updated with Dashboard link for connected wallets */}
       <section className="bg-blue-600 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
@@ -126,13 +125,17 @@ export default function Home() {
                 and security between investors and borrowing companies.
               </p>
               <div className="flex flex-wrap gap-4">
-                {/* Updated link here from /projects to /projects */}
                 <Link href="/projects" className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors">
                   Get Started
                 </Link>
                 <Link href="#how-it-works" className="bg-transparent hover:bg-blue-500 border border-white px-6 py-3 rounded-lg font-semibold transition-colors">
                   Learn More
                 </Link>
+                {isConnected && (
+                  <Link href="/dashboard" className="bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center">
+                    <FaUserCircle className="mr-2" /> My Dashboard
+                  </Link>
+                )}
               </div>
             </div>
             <div className="md:w-1/2">
@@ -174,7 +177,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section - No changes needed */}
+      {/* Rest of the component remains unchanged */}
+      {/* How It Works Section */}
       <section id="how-it-works" className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -260,7 +264,6 @@ export default function Home() {
                 <div key={campaign.address} className="border rounded-lg shadow-sm overflow-hidden bg-white">
                   <div className="border-b p-4">
                     <h2 className="font-semibold text-lg mb-1 break-all">
-                      {/* Update link from /campaigns to /campaigns */}
                       <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
                         Campaign @ {campaign.address.substring(0, 10)}...
                       </Link>
@@ -297,7 +300,6 @@ export default function Home() {
                   </div>
                   
                   <div className="p-4 border-t flex justify-end">
-                    {/* Update link from /campaigns to /campaigns */}
                     <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline text-sm">
                       View Details →
                     </Link>
@@ -309,7 +311,6 @@ export default function Home() {
           
           {isConnected && campaigns.length > 3 && (
             <div className="text-center mt-8">
-              {/* Update link from /projects to /projects */}
               <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 inline-block">
                 View All Campaigns
               </Link>
