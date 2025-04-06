@@ -26,7 +26,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <FaLink className="mr-2 text-xl" />
-            <span className="font-bold text-xl">BlockFund</span>
+            <span className="font-bold text-xl">LedgerVest</span>
           </Link>
 
           {/* Desktop Navigation */}

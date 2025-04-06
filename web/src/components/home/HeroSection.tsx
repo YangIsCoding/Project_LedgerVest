@@ -1,10 +1,11 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { FaUserCircle } from 'react-icons/fa';
 interface HeroSectionProps {
-    // You can define props here if needed
+    isConnected: boolean;
 }
-const HeroSection: React.FC<HeroSectionProps> = () => {
+const HeroSection: React.FC<HeroSectionProps> = (isConnected) => {
     return (
         <section className="bg-blue-600 text-white py-16">
             <div className="container mx-auto px-4">
@@ -24,11 +25,17 @@ const HeroSection: React.FC<HeroSectionProps> = () => {
                             <Link href="#how-it-works" className="bg-transparent hover:bg-blue-500 border border-white px-6 py-3 rounded-lg font-semibold transition-colors">
                                 Learn More
                             </Link>
+                            {isConnected && (
+                                <Link href="/dashboard" className="bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center">
+                                    <FaUserCircle className="mr-2" /> My Dashboard
+                                </Link>
+                            )}
+
                         </div>
                     </div>
                     <div className="md:w-1/2">
                         <Image
-                            src="/images/hero-image.svg"
+                            src="/HeroSection.png"
                             alt="Blockchain Investment"
                             width={600}
                             height={400}

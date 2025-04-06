@@ -35,7 +35,7 @@ export default async function RootLayout({
           <WalletProvider>
             <div className="flex flex-col min-h-screen">
               <Navbar />
-              <main className="flex-grow">
+              <main className="flex-grow bg-white text-gray-800 dark:bg-black dark:text-white-200">
                 {children}
               </main>
               <Footer />

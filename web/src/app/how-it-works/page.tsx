@@ -15,7 +15,7 @@ import {
 export default function HowItWorksPage() {
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">How BlockFund Works</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">How LedgerVest Works</h1>
       <p className="text-xl text-gray-600 max-w-4xl mx-auto text-center mb-12">
         Our blockchain-based platform ensures transparency, security, and trust between fundraisers and contributors.
       </p>
@@ -134,7 +134,7 @@ export default function HowItWorksPage() {
         <h2 className="text-2xl font-bold mb-6 text-center">Technical Overview</h2>
         <div className="bg-gray-50 rounded-lg p-8">
           <p className="text-gray-700 mb-4">
-            BlockFund is built on Ethereum smart contracts that enforce rules for fundraising campaigns. The platform uses two main contracts:
+            LedgerVest is built on Ethereum smart contracts that enforce rules for fundraising campaigns. The platform uses two main contracts:
           </p>
           
           <ul className="list-disc pl-6 mb-6 space-y-2">

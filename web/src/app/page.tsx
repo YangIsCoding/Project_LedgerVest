@@ -88,7 +88,9 @@ export default function Home() {
 
   return (
     <>
-      <HeroSection />
+      <HeroSection
+        isConnected={isConnected}
+      />
       <StatsSection />
       <HowItWorksSection />
       <ActiveCampaignsSection
