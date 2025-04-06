@@ -3,16 +3,23 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/lib/context/WalletContext';
-import { getCampaignContract } from '@/utils/ethers';
-import { 
-  FaUsers, FaProjectDiagram, FaCoins, FaList,
-  FaVoteYea, FaUserCircle, FaUserShield, FaWallet, 
-  FaChartBar, FaHandHoldingUsd, FaFileContract, FaPlusCircle,
-  FaEthereum, FaPlus
-} from 'react-icons/fa';
+import { getCampaignContract, formatEther, getProvider } from '@/utils/ethers';
+import { FaWallet, FaFileContract } from 'react-icons/fa';
+
+// Import the new components
+import AdminDashboardSection from '@/components/dashboard/AdminDashboardSection';
+import UserDashboardSection from '@/components/dashboard/UserDashboardSection';
+import AdminStats from '@/components/dashboard/AdminStats';
+import AdminActions from '@/components/dashboard/AdminActions';
+import UserStats from '@/components/dashboard/UserStats';
+import CampaignManagement from '@/components/dashboard/CampaignManagement';
+import YourInvestments from '@/components/dashboard/YourInvestments';
+import PendingVotes from '@/components/dashboard/PendingVotes';
 
 // Admin wallet addresses - replace with the actual admin addresses
 const ADMIN_WALLETS = [
+
+  '0xc3DbC713d5dd66CD2f529c6162Cf06dc9fe18b01',
   '0xb7695977d25D95d23b45BD6f9ACB74A5d332D28d'
 ];
 
@@ -46,7 +53,7 @@ export default function Dashboard() {
     totalFunds: '0',
     pendingRequests: 0
   });
-  
+
   // Check if connected wallet is an admin
   useEffect(() => {
     if (isConnected && account) {
@@ -54,14 +61,14 @@ export default function Dashboard() {
       setIsAdmin(ADMIN_WALLETS.includes(account));
     }
   }, [isConnected, account]);
-  
+
   // Load campaigns when wallet connects
   useEffect(() => {
     if (isConnected) {
       loadCampaigns();
     }
   }, [isConnected, loadCampaigns]);
-  
+
   // Fetch campaign data
   useEffect(() => {
     const fetchCampaignData = async () => {
@@ -69,17 +76,17 @@ export default function Dashboard() {
         setIsLoading(false);
         return;
       }
-      
+
       try {
         const summariesPromises = campaigns.map(async (address) => {
           try {
             const campaign = await getCampaignContract(address);
-            
+
             // Get individual properties directly
             const manager = await campaign.manager();
             const minimumContribution = await campaign.minimumContribution();
             const approversCount = await campaign.approversCount();
-            
+
             // For requestCount, we'll need to check if the property exists
             let requestCount = 0;
             if (campaign.requestsCount) {
@@ -87,11 +94,11 @@ export default function Dashboard() {
             } else if (campaign.getRequestsCount) {
               requestCount = Number(await campaign.getRequestsCount());
             }
-            
+
             // Get balance from provider
-            const provider = campaign.runner;
+            const provider = getProvider();
             const balance = await provider.getBalance(address);
-            
+
             return {
               address,
               manager,
@@ -112,41 +119,41 @@ export default function Dashboard() {
             };
           }
         });
-        
+
         const results = await Promise.all(summariesPromises);
         setCampaignSummaries(results);
-        
+
         // If user is admin, calculate platform stats
         if (isAdmin) {
           const totalContributors = results.reduce((sum, campaign) => sum + campaign.approversCount, 0);
-          const totalFunds = results.reduce((sum, camp) => 
+          const totalFunds = results.reduce((sum, camp) =>
             sum + (parseFloat(camp.balance) || 0), 0).toString();
           const totalPendingRequests = results.reduce((sum, camp) => sum + camp.requestCount, 0);
-          
+
           setTotalStats({
             contributors: totalContributors,
             totalFunds: totalFunds,
             pendingRequests: totalPendingRequests
           });
         }
-        
+
         // For regular users, find campaigns they've contributed to
         if (!isAdmin) {
           const userContributions = [];
           const userRequests = [];
-          
+
           for (const address of campaigns) {
             const campaign = await getCampaignContract(address);
-            
+
             try {
               const isContributor = await campaign.approvers(account);
-              
+
               if (isContributor) {
                 // Get individual properties directly
                 const manager = await campaign.manager();
                 const minimumContribution = await campaign.minimumContribution();
                 const approversCount = await campaign.approversCount();
-                
+
                 // For requestCount, we'll need to check if the property exists
                 let requestCount = 0;
                 if (campaign.requestsCount) {
@@ -154,10 +161,10 @@ export default function Dashboard() {
                 } else if (campaign.getRequestsCount) {
                   requestCount = Number(await campaign.getRequestsCount());
                 }
-                
-                const provider = campaign.runner;
+
+                const provider = getProvider();
                 const balance = await provider.getBalance(address);
-                
+
                 userContributions.push({
                   address,
                   manager,
@@ -166,13 +173,13 @@ export default function Dashboard() {
                   approversCount: Number(approversCount),
                   requestCount
                 });
-                
+
                 // Get requests that need user's vote
                 for (let i = 0; i < requestCount; i++) {
                   // Check if the contract has requests method
                   let request;
                   let hasApproved;
-                  
+
                   try {
                     request = await campaign.requests(i);
                     hasApproved = await campaign.approvals(i, account);
@@ -180,7 +187,7 @@ export default function Dashboard() {
                     console.error("Error fetching request details:", error);
                     continue;
                   }
-                  
+
                   if (!request.complete && !hasApproved) {
                     userRequests.push({
                       campaignAddress: address,
@@ -197,7 +204,7 @@ export default function Dashboard() {
               console.error(`Error checking user contributions for ${address}:`, error);
             }
           }
-          
+
           setUserContributions(userContributions);
           setPendingRequests(userRequests);
         }
@@ -207,25 +214,15 @@ export default function Dashboard() {
         setIsLoading(false);
       }
     };
-    
+
     fetchCampaignData();
   }, [campaigns, isConnected, account, isAdmin]);
-  
-  // Format wei to ETH
-  const formatEther = (wei, decimals = 4) => {
-    try {
-      const ethValue = parseFloat(wei) / 1e18;
-      return ethValue.toFixed(decimals);
-    } catch (error) {
-      return '0';
-    }
-  };
-  
+
   // If wallet is not connected
   if (!isConnected) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center py-12 bg-gray-50 rounded-lg shadow-sm">
+        <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
           <FaWallet className="text-5xl text-gray-400 mx-auto mb-4" />
           <h1 className="text-3xl font-bold mb-2">Connect Your Wallet</h1>
           <p className="text-gray-600 mb-4">Connect your wallet to view your dashboard.</p>
@@ -233,7 +230,7 @@ export default function Dashboard() {
       </div>
     );
   }
-  
+
   // If data is loading
   if (isLoading) {
     return (
@@ -244,440 +241,80 @@ export default function Dashboard() {
       </div>
     );
   }
-  
+
   // Admin Dashboard (including user functionality)
   if (isAdmin) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <FaUserShield className="mr-2 text-blue-600" /> Admin Dashboard
-          </h1>
-          <p className="text-gray-600">
-            Manage platform activities and monitor campaigns.
-          </p>
-        </div>
-        
+        <AdminDashboardSection
+          campaignsLength={campaigns.length}
+          totalStats={totalStats}
+          formatEther={formatEther}
+          account={account || ''}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main admin section - Left sidebar */}
           <div className="lg:col-span-1">
-            {/* Admin Stats */}
-            <div className="bg-blue-50 rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center">
-                <FaChartBar className="mr-2 text-blue-600" /> Platform Stats
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FaProjectDiagram className="text-blue-600 mr-2" />
-                    <span className="text-gray-700">Total Campaigns</span>
-                  </div>
-                  <span className="font-bold">{campaigns.length}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FaUsers className="text-blue-600 mr-2" />
-                    <span className="text-gray-700">Total Contributors</span>
-                  </div>
-                  <span className="font-bold">{totalStats.contributors}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FaCoins className="text-blue-600 mr-2" />
-                    <span className="text-gray-700">Total Funds</span>
-                  </div>
-                  <span className="font-bold">{formatEther(totalStats.totalFunds)} ETH</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FaList className="text-blue-600 mr-2" />
-                    <span className="text-gray-700">Pending Requests</span>
-                  </div>
-                  <span className="font-bold">{totalStats.pendingRequests}</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Admin Actions */}
-            <div className="bg-white rounded-lg shadow mb-6">
-              <div className="border-b p-4">
-                <h2 className="text-xl font-bold flex items-center">
-                  <FaUserShield className="mr-2 text-blue-600" /> Admin Actions
-                </h2>
-              </div>
-              <div className="p-4 space-y-3">
-                <Link href="/create" className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 flex items-center justify-center w-full">
-                  <FaPlusCircle className="mr-2" /> Create New Campaign
-                </Link>
-                <Link href="/projects" className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center justify-center w-full">
-                  <FaProjectDiagram className="mr-2" /> View All Projects
-                </Link>
-                <hr className="my-3" />
-                <h3 className="font-semibold text-gray-700">Your Admin Wallet</h3>
-                <div className="text-sm font-medium truncate bg-gray-50 p-2 rounded">
-                  {account}
-                </div>
-              </div>
-            </div>
-            
-            {/* User Stats Section (for Admin) */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="border-b p-4">
-                <h2 className="text-xl font-bold flex items-center">
-                  <FaUserCircle className="mr-2 text-blue-600" /> Your User Account
-                </h2>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-gray-50 rounded p-3">
-                    <div className="text-sm text-gray-500">Your Investments</div>
-                    <div className="text-xl font-bold flex items-center">
-                      <FaHandHoldingUsd className="mr-1 text-blue-600" />
-                      {userContributions.length}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 rounded p-3">
-                    <div className="text-sm text-gray-500">Pending Votes</div>
-                    <div className="text-xl font-bold flex items-center">
-                      <FaVoteYea className="mr-1 text-blue-600" />
-                      {pendingRequests.length}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AdminStats
+              campaignsLength={campaigns.length}
+              totalStats={totalStats}
+              formatEther={formatEther}
+            />
+
+            <AdminActions
+              account={account || ''}
+            />
+
+            <UserStats
+              userContributionsLength={userContributions.length}
+              pendingRequestsLength={pendingRequests.length}
+            />
           </div>
-          
+
           {/* Main content area - Right side */}
           <div className="lg:col-span-2">
-            {/* Campaign Management */}
-            <div className="bg-white rounded-lg shadow mb-8">
-              <div className="border-b p-4 flex justify-between items-center">
-                <h2 className="text-xl font-bold">Campaign Management</h2>
-                <div className="flex items-center space-x-2">
-                  <Link href="/create" className="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 text-sm flex items-center">
-                    <FaPlus className="mr-1" /> New
-                  </Link>
-                </div>
-              </div>
-              <div className="p-4">
-                {campaignSummaries.length === 0 ? (
-                  <p className="text-gray-500">No campaigns found.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manager</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contributors</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {campaignSummaries.map((campaign) => (
-                          <tr key={campaign.address}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{campaign.address.substring(0, 10)}...</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-500">{campaign.manager.substring(0, 10)}...</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900 flex items-center">
-                                <FaEthereum className="mr-1 text-gray-700" />
-                                {formatEther(campaign.balance)} ETH
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{campaign.approversCount}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                              <Link 
-                                href={`/campaigns/${campaign.address}`} 
-                                className="inline-block text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded"
-                              >
-                                View
-                              </Link>
-                              <Link 
-                                href={`/campaigns/${campaign.address}/requests`} 
-                                className="inline-block text-green-600 hover:text-green-900 bg-green-50 px-2 py-1 rounded"
-                              >
-                                Requests
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* User's Investments (Admin can see their personal investments) */}
-            <div className="bg-white rounded-lg shadow mb-8">
-              <div className="border-b p-4">
-                <h2 className="text-xl font-bold">Your Investments</h2>
-              </div>
-              <div className="p-4">
-                {userContributions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FaHandHoldingUsd className="text-4xl text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">You haven't invested in any campaigns yet.</p>
-                    <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                      Browse Campaigns
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {userContributions.map((campaign) => (
-                      <div key={campaign.address} className="border rounded-lg overflow-hidden">
-                        <div className="border-b p-4">
-                          <h3 className="font-semibold truncate">
-                            <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
-                              Campaign @ {campaign.address.substring(0, 10)}...
-                            </Link>
-                          </h3>
-                        </div>
-                        <div className="p-4 bg-gray-50">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-gray-500">Balance</p>
-                              <p className="font-medium flex items-center">
-                                <FaEthereum className="mr-1 text-gray-700" />
-                                {formatEther(campaign.balance)} ETH
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-500">Contributors</p>
-                              <p className="font-medium">{campaign.approversCount}</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-4 border-t">
-                          <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline text-sm">
-                            View Details →
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Pending Requests to Vote On (Admin's personal votes) */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="border-b p-4">
-                <h2 className="text-xl font-bold">Your Pending Votes</h2>
-              </div>
-              <div className="p-4">
-                {pendingRequests.length === 0 ? (
-                  <p className="text-gray-500 py-4">No pending requests require your vote at this time.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {pendingRequests.map((request) => (
-                          <tr key={`${request.campaignAddress}-${request.requestIndex}`}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{request.campaignAddress.substring(0, 8)}...</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{request.description}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900 flex items-center">
-                                <FaEthereum className="mr-1 text-gray-700" />
-                                {formatEther(request.value)} ETH
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-500">{request.recipient.substring(0, 8)}...</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <Link 
-                                href={`/campaigns/${request.campaignAddress}/requests/${request.requestIndex}`}
-                                className="bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700 text-xs"
-                              >
-                                Vote
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
+            <CampaignManagement
+              campaignSummaries={campaignSummaries}
+              formatEther={formatEther}
+            />
+
+            <YourInvestments
+              userContributions={userContributions}
+              formatEther={formatEther}
+            />
+
+            <PendingVotes
+              pendingRequests={pendingRequests}
+              formatEther={formatEther}
+            />
           </div>
         </div>
       </div>
     );
   }
-  
+
   // User Dashboard
   return (
     <div className="container mx-auto px-4 py-16">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 flex items-center">
-          <FaUserCircle className="mr-2 text-blue-600" /> User Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Welcome back! View your investments and voting opportunities.
-        </p>
-      </div>
-      
-      {/* User Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Your Investments</h3>
-            <FaHandHoldingUsd className="text-blue-600" />
-          </div>
-          <p className="text-3xl font-bold">{userContributions.length}</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Pending Votes</h3>
-            <FaVoteYea className="text-blue-600" />
-          </div>
-          <p className="text-3xl font-bold">{pendingRequests.length}</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Wallet</h3>
-            <FaWallet className="text-blue-600" />
-          </div>
-          <p className="text-sm font-medium truncate">{account}</p>
-        </div>
-      </div>
-      
+      <UserDashboardSection
+        userContributionsLength={userContributions.length}
+        pendingRequestsLength={pendingRequests.length}
+        account={account || ''}
+      />
+
       {/* Campaigns You've Invested In */}
-      <div className="bg-white rounded-lg shadow mb-8">
-        <div className="border-b p-4">
-          <h2 className="text-xl font-bold">Your Investments</h2>
-        </div>
-        <div className="p-4">
-          {userContributions.length === 0 ? (
-            <div className="text-center py-8">
-              <FaHandHoldingUsd className="text-4xl text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">You haven't invested in any campaigns yet.</p>
-              <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
-                Browse Campaigns
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userContributions.map((campaign) => (
-                <div key={campaign.address} className="border rounded-lg overflow-hidden">
-                  <div className="border-b p-4">
-                    <h3 className="font-semibold truncate">
-                      <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
-                        Campaign @ {campaign.address.substring(0, 10)}...
-                      </Link>
-                    </h3>
-                  </div>
-                  <div className="p-4 bg-gray-50">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Balance</p>
-                        <p className="font-medium flex items-center">
-                          <FaEthereum className="mr-1 text-gray-700" />
-                          {formatEther(campaign.balance)} ETH
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Contributors</p>
-                        <p className="font-medium">{campaign.approversCount}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 border-t">
-                    <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline text-sm">
-                      View Details →
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      
+      <YourInvestments
+        userContributions={userContributions}
+        formatEther={formatEther}
+      />
+
       {/* Pending Requests to Vote On */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b p-4">
-          <h2 className="text-xl font-bold">Pending Votes</h2>
-        </div>
-        <div className="p-4">
-          {pendingRequests.length === 0 ? (
-            <p className="text-gray-500 py-4">No pending requests require your vote at this time.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {pendingRequests.map((request) => (
-                    <tr key={`${request.campaignAddress}-${request.requestIndex}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{request.campaignAddress.substring(0, 8)}...</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{request.description}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 flex items-center">
-                          <FaEthereum className="mr-1 text-gray-700" />
-                          {formatEther(request.value)} ETH
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{request.recipient.substring(0, 8)}...</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <Link 
-                          href={`/campaigns/${request.campaignAddress}/requests/${request.requestIndex}`}
-                          className="bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700 text-xs"
-                        >
-                          Vote
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-      
+      <PendingVotes
+        pendingRequests={pendingRequests}
+        formatEther={formatEther}
+      />
+
       {/* Create Campaign CTA */}
       <div className="mt-8 text-center">
         <Link href="/create" className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 inline-flex items-center">

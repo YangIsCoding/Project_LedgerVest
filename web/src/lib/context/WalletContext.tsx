@@ -1,287 +1,160 @@
-// src/lib/context/WalletContext.tsx
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+	createContext,
+	useContext,
+	ReactNode,
+	useState,
+	useEffect,
+	useCallback,
+	useMemo
+} from 'react';
 import { ethers } from 'ethers';
-import { getFactoryContract } from '@/utils/ethers';
+import { useAccount, useChainId } from 'wagmi';
+import CampaignFactory from '@/utils/abis/CampaignFactory.json';
 
 interface WalletContextType {
-  isConnected: boolean;
-  account: string | null;
-  chainId: number | null;
-  provider: ethers.BrowserProvider | null;
-  signer: ethers.JsonRpcSigner | null;
-  connectWallet: () => Promise<void>;
-  disconnectWallet: () => void;
-  error: string | null;
-  balance: string | null;
-  networkName: string | null;
-  // Fundraising specific
-  factoryAddress: string | null;
-  campaigns: string[];
-  loadCampaigns: () => Promise<void>;
+	isConnected: boolean;
+	account: string | null;
+	chainId: number | null;
+	provider: ethers.BrowserProvider | null;
+	signer: ethers.JsonRpcSigner | null;
+	error: string | null;
+	balance: string | null;
+	networkName: string | null;
+	factoryAddress: string | null;
+	campaigns: string[];
+	loadCampaigns: () => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [account, setAccount] = useState<string | null>(null);
-  const [chainId, setChainId] = useState<number | null>(null);
-  const [networkName, setNetworkName] = useState<string | null>(null);
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
-  const [balance, setBalance] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [factoryAddress, setFactoryAddress] = useState<string | null>(null);
-  const [campaigns, setCampaigns] = useState<string[]>([]);
+	const { address, isConnected } = useAccount();
+	const chainId = useChainId();
+	const [balance, setBalance] = useState<string | null>(null);
+	const [networkName, setNetworkName] = useState<string | null>(null);
+	const [factoryAddress, setFactoryAddress] = useState<string | null>(null);
+	const [campaigns, setCampaigns] = useState<string[]>([]);
+	const [error, setError] = useState<string | null>(null);
+	const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
 
-  // Initialize wallet connection if already connected
-  useEffect(() => {
-    const init = async () => {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        try {
-          // Setup event listeners
-          window.ethereum.on('accountsChanged', handleAccountsChanged);
-          window.ethereum.on('chainChanged', handleChainChanged);
-          window.ethereum.on('disconnect', handleDisconnect);
-          
-          // Check if already connected
-          await checkConnection();
-        } catch (err) {
-          console.error("Error setting up wallet connection:", err);
-        }
-      }
-    };
+	// Memoize provider so it doesn't get recreated on every render
+	const provider = useMemo(() => {
+		if (typeof window !== 'undefined' && window.ethereum) {
+			return new ethers.BrowserProvider(window.ethereum);
+		}
+		return null;
+	}, []);
 
-    init();
+	// Load campaigns from factory contract
+	const loadCampaigns = useCallback(async () => {
+		if (!provider) {
+			setError('No provider available');
+			return;
+		}
+		try {
+			// Load factory address from config (assumes you have a contract-address.json)
+			const { CampaignFactory: factoryAddr } = await import(
+				'@/utils/abis/contract-address.json'
+			);
+			setFactoryAddress(factoryAddr);
+			const factory = new ethers.Contract(factoryAddr, CampaignFactory.abi, provider);
+			const deployedCampaigns = await factory.getDeployedCampaigns();
+			setCampaigns(deployedCampaigns);
+		} catch (err) {
+			console.error('Failed to load campaigns:', err);
+			setError('Failed to load campaigns');
+		}
+	}, [provider]);
 
-    // Cleanup event listeners
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-        window.ethereum.removeListener('disconnect', handleDisconnect);
-      }
-    };
-  }, []);
+	// Map chainId to network name
+	const getNetworkName = useCallback((chainId: number): string => {
+		const networks: Record<number, string> = {
+			1: 'Ethereum Mainnet',
+			59141: 'Sepolia Testnet',
+		};
+		return networks[chainId] || `Chain ID: ${chainId}`;
+	}, []);
 
-  // Update account balance when account changes
-  useEffect(() => {
-    if (provider && account) {
-      fetchBalance();
-    }
-  }, [provider, account]);
+	// Update signer and Fetch account balance when provider and address are available
+	useEffect(() => {
+		if (provider && address) {
+			// Update signer
+			provider
+				.getSigner()
+				.then((s) => setSigner(s))
+				.catch((err) => {
+					console.error('Error fetching signer:', err);
+					setSigner(null);
+				});
+			provider
+				.getBalance(address)
+				.then((rawBalance) => {
+					const formatted = ethers.formatEther(rawBalance);
+					setBalance(parseFloat(formatted).toFixed(4));
+				})
+				.catch((err) => {
+					console.error('Error fetching balance:', err);
+					setBalance(null);
+				});
+		} else {
+			setSigner(null);
+			setBalance(null);
+		}
+	}, [provider, address]);
 
-  // Load campaign data when connected
-  useEffect(() => {
-    if (isConnected) {
-      loadCampaigns();
-    }
-  }, [isConnected]);
 
-  // Helper function to get network name
-  const getNetworkName = (chainId: number): string => {
-    const networks: Record<number, string> = {
-      1: 'Ethereum Mainnet',
-      5: 'Goerli Testnet',
-      11155111: 'Sepolia Testnet',
-      137: 'Polygon Mainnet',
-      80001: 'Mumbai Testnet',
-      56: 'BNB Smart Chain',
-      97: 'BNB Testnet',
-      42161: 'Arbitrum One',
-      421613: 'Arbitrum Goerli',
-      10: 'Optimism',
-      420: 'Optimism Goerli',
-      43114: 'Avalanche C-Chain',
-      43113: 'Avalanche Fuji'
-    };
-    
-    return networks[chainId] || `Chain ID: ${chainId}`;
-  };
+	useEffect(() => {
+		if (isConnected && chainId) {
+			setNetworkName(getNetworkName(chainId));
+		} else {
+			setNetworkName(null);
+		}
+	}, [isConnected, chainId, getNetworkName]);
 
-  // Fetch account balance
-  const fetchBalance = async () => {
-    if (provider && account) {
-      try {
-        const rawBalance = await provider.getBalance(account);
-        // Format balance to show in ETH with 4 decimal places
-        const formattedBalance = ethers.formatEther(rawBalance);
-        const trimmedBalance = parseFloat(formattedBalance).toFixed(4);
-        setBalance(trimmedBalance);
-      } catch (err) {
-        console.error("Error fetching balance:", err);
-        setBalance(null);
-      }
-    }
-  };
 
-  // Check if wallet is already connected
-  const checkConnection = async () => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      try {
-        // Create ethers provider
-        const ethersProvider = new ethers.BrowserProvider(window.ethereum);
-        
-        // Get accounts
-        const accounts = await ethersProvider.listAccounts();
-        
-        if (accounts && accounts.length > 0) {
-          const network = await ethersProvider.getNetwork();
-          const ethersSigner = await ethersProvider.getSigner();
-          
-          // Get factory address from ABI
-          try {
-            const factoryAddr = (await import('@/utils/abis/contract-address.json')).CampaignFactory;
-            setFactoryAddress(factoryAddr);
-          } catch (err) {
-            console.error("Error loading factory address:", err);
-          }
-          
-          setIsConnected(true);
-          setAccount(accounts[0].address);
-          setChainId(Number(network.chainId));
-          setNetworkName(getNetworkName(Number(network.chainId)));
-          setProvider(ethersProvider);
-          setSigner(ethersSigner);
-        }
-      } catch (err) {
-        console.error("Failed to check wallet connection:", err);
-        setError("Failed to check wallet connection");
-      }
-    }
-  };
+	// Reload campaigns when wallet connects
+	useEffect(() => {
+		if (isConnected) {
+			loadCampaigns();
+		} else {
+			setCampaigns([]);
+			setFactoryAddress(null);
+		}
+	}, [isConnected, loadCampaigns]);
 
-  // Connect to MetaMask wallet
-  const connectWallet = async () => {
-    setError(null);
-    
-    if (typeof window === 'undefined') return;
-    
-    if (!window.ethereum) {
-      setError("No Ethereum wallet found. Please install MetaMask.");
-      return;
-    }
-    
-    try {
-      // Request account access
-      const ethersProvider = new ethers.BrowserProvider(window.ethereum);
-      await ethersProvider.send("eth_requestAccounts", []);
-      
-      const accounts = await ethersProvider.listAccounts();
-      const network = await ethersProvider.getNetwork();
-      const ethersSigner = await ethersProvider.getSigner();
-      
-      // Get factory address from ABI
-      try {
-        const factoryAddr = (await import('@/utils/abis/contract-address.json')).CampaignFactory;
-        setFactoryAddress(factoryAddr);
-      } catch (err) {
-        console.error("Error loading factory address:", err);
-      }
-      
-      // Update state
-      setIsConnected(true);
-      setAccount(accounts[0].address);
-      setChainId(Number(network.chainId));
-      setNetworkName(getNetworkName(Number(network.chainId)));
-      setProvider(ethersProvider);
-      setSigner(ethersSigner);
-      
-      // Load campaigns
-      await loadCampaigns();
-    } catch (err: any) {
-      // Handle user rejected request
-      if (err.code === 4001) {
-        setError("Connection request rejected");
-      } else {
-        console.error("Failed to connect wallet:", err);
-        setError(err.message || "Failed to connect wallet");
-      }
-    }
-  };
+	const value: WalletContextType = {
+		isConnected,
+		account: address || null,
+		chainId: chainId || null,
+		provider,
+		signer,
+		error,
+		balance,
+		networkName,
+		factoryAddress,
+		campaigns,
+		loadCampaigns
+	};
 
-  // Disconnect wallet (for UI purposes only - MetaMask doesn't actually disconnect)
-  const disconnectWallet = () => {
-    setIsConnected(false);
-    setAccount(null);
-    setChainId(null);
-    setNetworkName(null);
-    setProvider(null);
-    setSigner(null);
-    setBalance(null);
-    setCampaigns([]);
-  };
-
-  // Load all campaigns from the factory
-  const loadCampaigns = async () => {
-    try {
-      const factory = await getFactoryContract();
-      const deployedCampaigns = await factory.getDeployedCampaigns();
-      setCampaigns(deployedCampaigns);
-    } catch (err) {
-      console.error("Failed to load campaigns:", err);
-    }
-  };
-
-  // Handle account change events
-  const handleAccountsChanged = (accounts: string[]) => {
-    if (accounts.length === 0) {
-      // User disconnected their wallet
-      disconnectWallet();
-    } else {
-      // User switched accounts
-      setAccount(accounts[0]);
-    }
-  };
-
-  // Handle network change events
-  const handleChainChanged = (chainIdHex: string) => {
-    // Need to reload provider on chain change
-    window.location.reload();
-  };
-
-  // Handle disconnect events
-  const handleDisconnect = (error: { code: number; message: string }) => {
-    console.log("Wallet disconnected:", error);
-    disconnectWallet();
-  };
-
-  const value = {
-    isConnected,
-    account,
-    chainId,
-    networkName,
-    provider,
-    signer,
-    balance,
-    connectWallet,
-    disconnectWallet,
-    error,
-    factoryAddress,
-    campaigns,
-    loadCampaigns
-  };
-
-  return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
-  );
+	return (
+		<WalletContext.Provider value={value}>
+			{children}
+		</WalletContext.Provider>
+	);
 }
 
 export function useWallet() {
-  const context = useContext(WalletContext);
-  if (context === undefined) {
-    throw new Error('useWallet must be used within a WalletProvider');
-  }
-  return context;
+	const context = useContext(WalletContext);
+	if (context === undefined) {
+		throw new Error('useWallet must be used within a WalletProvider');
+	}
+	return context;
 }
 
-// Add a type definition for window.ethereum
 declare global {
-  interface Window {
-    ethereum?: any;
-  }
+	interface Window {
+		ethereum?: any;
+	}
 }

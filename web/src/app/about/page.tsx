@@ -14,7 +14,7 @@ import {
 export default function AboutPage() {
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">About BlockFund</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">About LedgerVest</h1>
       <p className="text-xl text-gray-600 max-w-4xl mx-auto text-center mb-12">
         Revolutionizing fundraising with blockchain technology to create a transparent, fair, and secure platform for everyone.
       </p>
@@ -29,11 +29,11 @@ export default function AboutPage() {
         </div>
       </div>
       
-      {/* Why BlockFund */}
+      {/* Why LedgerVest */}
       <div className="mb-16">
-        <h2 className="text-2xl font-bold mb-6 text-center">Why BlockFund?</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Why LedgerVest?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <FaShieldAlt className="text-4xl text-blue-600 mb-4 mx-auto" />
             <h3 className="text-xl font-bold mb-2">Security First</h3>
             <p className="text-gray-600">
@@ -41,7 +41,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <FaLightbulb className="text-4xl text-blue-600 mb-4 mx-auto" />
             <h3 className="text-xl font-bold mb-2">Transparent Funding</h3>
             <p className="text-gray-600">
@@ -49,7 +49,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <FaHandshake className="text-4xl text-blue-600 mb-4 mx-auto" />
             <h3 className="text-xl font-bold mb-2">Community Governed</h3>
             <p className="text-gray-600">
@@ -63,7 +63,7 @@ export default function AboutPage() {
       <div className="mb-16">
         <h2 className="text-2xl font-bold mb-6 text-center">Our Core Principles</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaLock />
@@ -76,7 +76,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaBalanceScale />
@@ -89,7 +89,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaGlobe />
@@ -102,7 +102,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaUsers />
@@ -122,7 +122,7 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold mb-6 text-center">Our Technology</h2>
         <div className="bg-gray-50 rounded-lg p-8">
           <p className="text-gray-700 mb-4">
-            BlockFund is built on the Ethereum blockchain using Solidity smart contracts. Our architecture consists of:
+            LedgerVest is built on the Ethereum blockchain using Solidity smart contracts. Our architecture consists of:
           </p>
           
           <ul className="list-disc pl-6 mb-6 space-y-2">
@@ -147,7 +147,7 @@ export default function AboutPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Add team member cards here */}
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <h3 className="font-bold">Alex Chen</h3>
             <p className="text-blue-600">Founder & CEO</p>
@@ -156,7 +156,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <h3 className="font-bold">Sophia Rodriguez</h3>
             <p className="text-blue-600">CTO</p>
@@ -165,7 +165,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <h3 className="font-bold">Michael Johnson</h3>
             <p className="text-blue-600">Lead Developer</p>

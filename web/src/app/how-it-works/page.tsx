@@ -15,14 +15,14 @@ import {
 export default function HowItWorksPage() {
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">How BlockFund Works</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">How LedgerVest Works</h1>
       <p className="text-xl text-gray-600 max-w-4xl mx-auto text-center mb-12">
         Our blockchain-based platform ensures transparency, security, and trust between fundraisers and contributors.
       </p>
 
       {/* Main steps */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaUserPlus className="text-3xl" />
           </div>
@@ -30,7 +30,7 @@ export default function HowItWorksPage() {
           <p className="text-gray-600">Connect your MetaMask wallet to our platform. This serves as your secure identity and allows you to interact with our smart contracts.</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaFileContract className="text-3xl" />
           </div>
@@ -38,7 +38,7 @@ export default function HowItWorksPage() {
           <p className="text-gray-600">Create your own fundraising campaign with a minimum contribution amount, or browse existing campaigns to support.</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaHandHoldingUsd className="text-3xl" />
           </div>
@@ -46,7 +46,7 @@ export default function HowItWorksPage() {
           <p className="text-gray-600">Contribute ETH to campaigns you believe in. When you contribute, you become an approver who can vote on spending requests.</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaChartLine className="text-3xl" />
           </div>
@@ -134,7 +134,7 @@ export default function HowItWorksPage() {
         <h2 className="text-2xl font-bold mb-6 text-center">Technical Overview</h2>
         <div className="bg-gray-50 rounded-lg p-8">
           <p className="text-gray-700 mb-4">
-            BlockFund is built on Ethereum smart contracts that enforce rules for fundraising campaigns. The platform uses two main contracts:
+            LedgerVest is built on Ethereum smart contracts that enforce rules for fundraising campaigns. The platform uses two main contracts:
           </p>
           
           <ul className="list-disc pl-6 mb-6 space-y-2">
