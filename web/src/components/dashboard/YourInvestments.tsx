@@ -21,7 +21,7 @@ export default function YourInvestments({
   formatEther
 }: YourInvestmentsProps) {
   return (
-    <div className="bg-white rounded-lg shadow mb-8">
+    <div className="bg-white rounded-lg shadow-sm mb-8">
       <div className="border-b p-4">
         <h2 className="text-xl font-bold">Your Investments</h2>
       </div>
@@ -30,7 +30,7 @@ export default function YourInvestments({
           <div className="text-center py-8">
             <FaHandHoldingUsd className="text-4xl text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">You haven't invested in any campaigns yet.</p>
-            <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+            <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded-sm hover:bg-blue-700">
               Browse Campaigns
             </Link>
           </div>

@@ -21,7 +21,7 @@ export default function ContributeSection({
   displayEther,
 }: ContributeSectionProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden sticky top-6">
+    <div className="bg-white rounded-lg shadow-xs overflow-hidden sticky top-6">
       <div className="p-6">
         <h2 className="text-xl font-bold mb-4">Contribute to Campaign</h2>
 

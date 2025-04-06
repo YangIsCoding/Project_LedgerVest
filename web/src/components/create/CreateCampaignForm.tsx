@@ -17,7 +17,7 @@ const CreateCampaignForm: React.FC<CreateCampaignFormProps> = ({
 }) => {
     return (
         <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg shadow-xs overflow-hidden">
                 <div className="p-6">
                     <h1 className="text-2xl font-bold mb-6">Create a New Campaign</h1>
 

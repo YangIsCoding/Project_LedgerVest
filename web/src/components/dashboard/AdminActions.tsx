@@ -8,7 +8,7 @@ interface AdminActionsProps {
 
 export default function AdminActions({ account }: AdminActionsProps) {
   return (
-    <div className="bg-white rounded-lg shadow mb-6">
+    <div className="bg-white rounded-lg shadow-sm mb-6">
       <div className="border-b p-4">
         <h2 className="text-xl font-bold flex items-center">
           <FaUserShield className="mr-2 text-blue-600" /> Admin Actions
@@ -23,7 +23,7 @@ export default function AdminActions({ account }: AdminActionsProps) {
         </Link>
         <hr className="my-3" />
         <h3 className="font-semibold text-gray-700">Your Admin Wallet</h3>
-        <div className="text-sm font-medium truncate bg-gray-50 p-2 rounded">
+        <div className="text-sm font-medium truncate bg-gray-50 p-2 rounded-sm">
           {account}
         </div>
       </div>

@@ -17,7 +17,7 @@ export default function AdminStats({
   formatEther
 }: AdminStatsProps) {
   return (
-    <div className="bg-blue-50 rounded-lg shadow p-6 mb-6">
+    <div className="bg-blue-50 rounded-lg shadow-sm p-6 mb-6">
       <h2 className="text-xl font-bold mb-4 flex items-center">
         <FaChartBar className="mr-2 text-blue-600" /> Platform Stats
       </h2>

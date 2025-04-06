@@ -21,7 +21,7 @@ export default function PendingVotes({
   formatEther
 }: PendingVotesProps) {
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b p-4">
         <h2 className="text-xl font-bold">Pending Votes</h2>
       </div>
@@ -61,7 +61,7 @@ export default function PendingVotes({
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <Link
                         href={`/campaigns/${request.campaignAddress}/requests/${request.requestIndex}`}
-                        className="bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700 text-xs"
+                        className="bg-green-600 text-white py-1 px-3 rounded-sm hover:bg-green-700 text-xs"
                       >
                         Vote
                       </Link>

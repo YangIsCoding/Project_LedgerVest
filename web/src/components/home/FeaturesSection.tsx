@@ -19,7 +19,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <FaShieldAlt className="text-2xl text-blue-600 mr-3" />
               <h4 className="text-xl font-bold">Investor Protection</h4>
@@ -29,7 +29,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <FaVoteYea className="text-2xl text-blue-600 mr-3" />
               <h4 className="text-xl font-bold">Fund Approval</h4>
@@ -39,7 +39,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <FaWallet className="text-2xl text-blue-600 mr-3" />
               <h4 className="text-xl font-bold">Secure Transactions</h4>
@@ -49,7 +49,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <FaStar className="text-2xl text-blue-600 mr-3" />
               <h4 className="text-xl font-bold">Credit Scoring</h4>
@@ -59,7 +59,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <FaBalanceScale className="text-2xl text-blue-600 mr-3" />
               <h4 className="text-xl font-bold">Risk Grading</h4>
@@ -69,7 +69,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <FaFileInvoiceDollar className="text-2xl text-blue-600 mr-3" />
               <h4 className="text-xl font-bold">Automated Payments</h4>

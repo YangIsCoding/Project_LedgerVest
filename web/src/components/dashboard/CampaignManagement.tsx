@@ -21,11 +21,11 @@ export default function CampaignManagement({
   formatEther
 }: CampaignManagementProps) {
   return (
-    <div className="bg-white rounded-lg shadow mb-8">
+    <div className="bg-white rounded-lg shadow-sm mb-8">
       <div className="border-b p-4 flex justify-between items-center">
         <h2 className="text-xl font-bold">Campaign Management</h2>
         <div className="flex items-center space-x-2">
-          <Link href="/create" className="bg-blue-600 text-white py-1 px-4 rounded hover:bg-blue-700 text-sm flex items-center">
+          <Link href="/create" className="bg-blue-600 text-white py-1 px-4 rounded-sm hover:bg-blue-700 text-sm flex items-center">
             <FaPlus className="mr-1" /> New
           </Link>
         </div>
@@ -66,13 +66,13 @@ export default function CampaignManagement({
                     <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                       <Link
                         href={`/campaigns/${campaign.address}`}
-                        className="inline-block text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded"
+                        className="inline-block text-blue-600 hover:text-blue-900 bg-blue-50 px-2 py-1 rounded-sm"
                       >
                         View
                       </Link>
                       <Link
                         href={`/campaigns/${campaign.address}/requests`}
-                        className="inline-block text-green-600 hover:text-green-900 bg-green-50 px-2 py-1 rounded"
+                        className="inline-block text-green-600 hover:text-green-900 bg-green-50 px-2 py-1 rounded-sm"
                       >
                         Requests
                       </Link>

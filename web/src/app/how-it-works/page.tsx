@@ -22,7 +22,7 @@ export default function HowItWorksPage() {
 
       {/* Main steps */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaUserPlus className="text-3xl" />
           </div>
@@ -30,7 +30,7 @@ export default function HowItWorksPage() {
           <p className="text-gray-600">Connect your MetaMask wallet to our platform. This serves as your secure identity and allows you to interact with our smart contracts.</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaFileContract className="text-3xl" />
           </div>
@@ -38,7 +38,7 @@ export default function HowItWorksPage() {
           <p className="text-gray-600">Create your own fundraising campaign with a minimum contribution amount, or browse existing campaigns to support.</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaHandHoldingUsd className="text-3xl" />
           </div>
@@ -46,7 +46,7 @@ export default function HowItWorksPage() {
           <p className="text-gray-600">Contribute ETH to campaigns you believe in. When you contribute, you become an approver who can vote on spending requests.</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6 text-center">
+        <div className="bg-white rounded-lg shadow-xs border p-6 text-center">
           <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
             <FaChartLine className="text-3xl" />
           </div>

@@ -34,7 +34,7 @@ const ActiveCampaignsSection: React.FC<ActiveCampaignsSectionProps> = ({
         </div>
 
         {!isConnected ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg shadow-sm">
+          <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
             <FaWallet className="text-5xl text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Connect Your Wallet</h3>
             <p className="text-gray-600 mb-4">Connect your wallet to view active campaigns and participate in fundraising.</p>
@@ -54,7 +54,7 @@ const ActiveCampaignsSection: React.FC<ActiveCampaignsSectionProps> = ({
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {campaignSummaries.slice(0, 3).map((campaign) => (
-              <div key={campaign.address} className="border rounded-lg shadow-sm overflow-hidden bg-white">
+              <div key={campaign.address} className="border rounded-lg shadow-xs overflow-hidden bg-white">
                 <div className="border-b p-4">
                   <h2 className="font-semibold text-lg mb-1 break-all">
                     <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">

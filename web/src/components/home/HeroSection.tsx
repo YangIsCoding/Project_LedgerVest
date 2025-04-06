@@ -36,10 +36,10 @@ const HeroSection: React.FC<HeroSectionProps> = (isConnected) => {
                     <div className="md:w-1/2">
                         <Image
                             src="/HeroSection.png"
-                            alt="Blockchain Investment"
-                            width={600}
+                            alt="Hero Image"
+                            width={900}
                             height={400}
-                            className="w-full h-auto"
+                            className="w-auto h-full"
                             priority
                         />
                     </div>

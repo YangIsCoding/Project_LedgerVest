@@ -21,7 +21,7 @@ export default function CampaignDetails({
   displayEther,
 }: CampaignDetailsProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+    <div className="bg-white rounded-lg shadow-xs overflow-hidden mb-6">
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-2">Campaign Details</h1>
         <p className="text-gray-500 break-all mb-4">Address: {address}</p>

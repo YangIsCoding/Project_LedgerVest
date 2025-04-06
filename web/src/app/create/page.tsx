@@ -73,7 +73,7 @@ export default function CreateCampaignPage() {
   if (!isConnected) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12 bg-gray-50 rounded-lg shadow-sm">
+        <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
           <FaExclamationTriangle className="text-4xl text-yellow-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Wallet Not Connected</h2>
           <p className="mb-4 text-gray-600">Please connect your wallet to create a campaign.</p>

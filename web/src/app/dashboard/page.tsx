@@ -222,7 +222,7 @@ export default function Dashboard() {
   if (!isConnected) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center py-12 bg-gray-50 rounded-lg shadow-sm">
+        <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
           <FaWallet className="text-5xl text-gray-400 mx-auto mb-4" />
           <h1 className="text-3xl font-bold mb-2">Connect Your Wallet</h1>
           <p className="text-gray-600 mb-4">Connect your wallet to view your dashboard.</p>

@@ -33,7 +33,7 @@ export default function AboutPage() {
       <div className="mb-16">
         <h2 className="text-2xl font-bold mb-6 text-center">Why LedgerVest?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <FaShieldAlt className="text-4xl text-blue-600 mb-4 mx-auto" />
             <h3 className="text-xl font-bold mb-2">Security First</h3>
             <p className="text-gray-600">
@@ -41,7 +41,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <FaLightbulb className="text-4xl text-blue-600 mb-4 mx-auto" />
             <h3 className="text-xl font-bold mb-2">Transparent Funding</h3>
             <p className="text-gray-600">
@@ -49,7 +49,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <FaHandshake className="text-4xl text-blue-600 mb-4 mx-auto" />
             <h3 className="text-xl font-bold mb-2">Community Governed</h3>
             <p className="text-gray-600">
@@ -63,7 +63,7 @@ export default function AboutPage() {
       <div className="mb-16">
         <h2 className="text-2xl font-bold mb-6 text-center">Our Core Principles</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaLock />
@@ -76,7 +76,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaBalanceScale />
@@ -89,7 +89,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaGlobe />
@@ -102,7 +102,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-xs p-6">
             <div className="flex items-center mb-4">
               <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
                 <FaUsers />
@@ -147,7 +147,7 @@ export default function AboutPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Add team member cards here */}
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <h3 className="font-bold">Alex Chen</h3>
             <p className="text-blue-600">Founder & CEO</p>
@@ -156,7 +156,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <h3 className="font-bold">Sophia Rodriguez</h3>
             <p className="text-blue-600">CTO</p>
@@ -165,7 +165,7 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <div className="bg-white rounded-lg shadow-xs p-6 text-center">
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <h3 className="font-bold">Michael Johnson</h3>
             <p className="text-blue-600">Lead Developer</p>
