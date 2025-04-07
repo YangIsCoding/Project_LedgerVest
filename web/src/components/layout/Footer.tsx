@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h5 className="font-bold text-lg mb-4">BlockFund</h5>
+            <h5 className="font-bold text-lg mb-4">LedgerVest</h5>
             <p className="text-gray-300">
               A decentralized investment and lending platform ensuring trust and security 
               between investors and borrowing companies.
@@ -47,7 +47,7 @@ export default function Footer() {
         <hr className="border-gray-700 my-6" />
         
         <div className="text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} BlockFund. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} LedgerVest. All rights reserved.</p>
         </div>
       </div>
     </footer>

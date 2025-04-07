@@ -1,15 +1,16 @@
-// src/components/layout/Navbar.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useWallet } from '@/lib/context/WalletContext';
 import WalletButton from '../ui/WalletButton';
-import { FaLink, FaBars, FaTimes } from 'react-icons/fa';
+import { FaLink, FaBars, FaTimes, FaUserCircle } from 'react-icons/fa';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { isConnected } = useWallet();
   
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -25,14 +26,14 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <FaLink className="mr-2 text-xl" />
-            <span className="font-bold text-xl">BlockFund</span>
+            <span className="font-bold text-xl">LedgerVest</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             <ul className="flex space-x-4 mr-4">
               {navLinks.map((link) => (
-                <li key={link.name}>
+                <li key={link.name} className="flex items-center">
                   <Link 
                     href={link.href}
                     className={`px-3 py-2 rounded-md text-sm font-medium ${
@@ -45,6 +46,24 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
+              
+              {/* Only show dashboard link if wallet is connected */}
+              {isConnected && (
+                <li className="flex items-center">
+                  <Link 
+                    href="/dashboard"
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      pathname === '/dashboard' 
+                        ? 'bg-gray-800 text-white' 
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    }`}
+                  >
+                    <span className="flex items-center">
+                      <FaUserCircle className="mr-1" /> Dashboard
+                    </span>
+                  </Link>
+                </li>
+              )}
             </ul>
 
             {/* Wallet Button */}
@@ -82,6 +101,25 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
+            
+            {/* Only show dashboard link if wallet is connected */}
+            {isConnected && (
+              <div className="block">
+                <Link
+                  href="/dashboard"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    pathname === '/dashboard'
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span className="flex items-center">
+                    <FaUserCircle className="mr-2" /> Dashboard
+                  </span>
+                </Link>
+              </div>
+            )}
           </div>
           <div className="px-4 py-3 border-t border-gray-700">
             <WalletButton />
