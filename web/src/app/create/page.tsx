@@ -40,7 +40,9 @@ export default function CreateCampaignPage() {
 
       // Create campaign transaction
       setMessage({ text: 'Creating campaign...', type: 'info' });
-      const tx = await factoryWithSigner.createCampaign(minimumInWei);
+      const tx = await factoryWithSigner.createCampaign(minimumInWei, {
+      value: ethers.parseEther("0.02"), // 傳遞至少 2% 的費用
+    });
 
       // Wait for transaction to complete
       setMessage({ text: 'Transaction submitted. Waiting for confirmation...', type: 'info' });
