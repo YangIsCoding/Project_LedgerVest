@@ -184,7 +184,13 @@ export default function SpendingRequests({
                       )}
                       {!request.complete && isManager && (
                         <button
-                          onClick={() => handleFinalizeRequest(request.index, request.requestId)}
+                          onClick={() => {
+                            if (!request.requestId) {
+                              console.error('❌ Missing requestId for finalization');
+                              return;
+                            }
+                            handleFinalizeRequest(request.index, request.requestId);
+                          }}
                           className="text-green-600 hover:text-green-900"
                         >
                           Finalize

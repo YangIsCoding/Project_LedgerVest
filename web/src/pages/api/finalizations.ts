@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fundSeekerAddr,
         campaignAddr,
         amount,
-        gasCost: gasCost ?? null,
+        gasCost: gasCost !== undefined ? parseFloat(gasCost) : null,
       },
     });
 
