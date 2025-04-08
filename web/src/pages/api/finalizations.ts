@@ -10,9 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const {
     txHash,
-    requestId,        // 對應 request.txHash
-    fundSeekerAddr,   // 對應 user.walletAddress
-    campaignAddr,     // 對應 campaign.contractAddress
+    requestId,
+    fundSeekerAddr,
+    campaignAddr,
     amount,
     gasCost,
   } = req.body;
@@ -22,16 +22,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // ✅ 確保 fund seeker user 存在
-    await prisma.user.upsert({
-      where: { walletAddress: fundSeekerAddr },
-      update: { lastLogin: new Date() },
-      create: {
-        walletAddress: fundSeekerAddr,
-      },
-    });
-
-    // ✅ 建立 Finalization
     const finalization = await prisma.finalization.create({
       data: {
         txHash,
@@ -43,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    return res.status(201).json(finalization);
+    return res.status(200).json(finalization);
   } catch (err: any) {
     console.error('❌ Error creating finalization:', err);
 
@@ -51,6 +41,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(409).json({ error: 'Finalization already exists' });
     }
 
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 }

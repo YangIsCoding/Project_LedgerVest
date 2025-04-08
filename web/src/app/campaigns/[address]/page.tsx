@@ -25,6 +25,7 @@ interface Request {
   approvalCount: number;
   approvers: number;
   index: number;
+  requestId: string | null;
   hasApproved?: boolean;
 }
 
@@ -120,63 +121,71 @@ export default function CampaignPage() {
   // Load requests
   // Load requests
   async function loadRequests() {
-    try {
-      const campaign = await getCampaignContract(address as string);
+  try {
+    const campaign = await getCampaignContract(address as string);
 
-      // Get request count
-      let requestCount = 0;
-      let currentIndex = 0;
-      let foundRequest = true;
+    // Fetch all requests from the database
+    const response = await fetch(`/api/requests?campaignAddress=${address}`);
+    const dbRequests = await response.json();
+    console.log('Database requests:', dbRequests); // 調試用
 
-      // Since there's no direct way to get request count, we'll try getting requests
-      // until we find an error, which means we've reached the end
-      const requestsArray: Request[] = [];
+    let currentIndex = 0;
+    let foundRequest = true;
+    const requestsArray: Request[] = [];
 
-      while (foundRequest) {
-        try {
-          const request = await campaign.requests(currentIndex);
+    while (foundRequest) {
+      try {
+        const request = await campaign.requests(currentIndex);
 
-          // Add to requests array
-          requestsArray.push({
-            description: request.description,
-            value: request.value.toString(),
-            recipient: request.recipient,
-            complete: request.complete,
-            approvalCount: Number(request.approvalCount),
-            approvers: Number(await campaign.approversCount()),
-            index: currentIndex
-          });
-
-          currentIndex++;
-        } catch (error) {
-          // No more requests
-          foundRequest = false;
-        }
-      }
-
-      // If user is an approver, check which requests they've approved
-      if (isApprover && account) {
-        const updatedRequests = await Promise.all(
-          requestsArray.map(async (request) => {
-            try {
-              // Unfortunately, we can't directly access the approvals mapping from outside
-              // so this would require a contract modification to expose this information
-              // For now, we'll leave this as a placeholder
-              return { ...request, hasApproved: false };
-            } catch (error) {
-              return { ...request, hasApproved: false };
-            }
-          })
+        // 使用 currentIndex 匹配後端返回的資料
+        const dbRequest = dbRequests.find(
+          (r: any) =>
+            r.reason === request.description &&
+            Number(r.amount) === Number(ethers.formatEther(request.value))
         );
 
-        setRequests(updatedRequests);
-      } else {
-        setRequests(requestsArray);
+        // Add to requests array
+        requestsArray.push({
+          description: request.description,
+          value: request.value.toString(),
+          recipient: request.recipient,
+          complete: request.complete,
+          approvalCount: Number(request.approvalCount),
+          approvers: Number(await campaign.approversCount()),
+          index: currentIndex,
+          requestId: dbRequest?.id || null, // 從後端獲取 requestId
+        });
+
+        currentIndex++;
+      } catch (error) {
+        // No more requests
+        foundRequest = false;
       }
-    } catch (error) {
-      console.error("Error loading requests:", error);
     }
+
+    console.log('Requests array:', requestsArray); // 檢查處理後的請求資料
+
+    // 如果用戶是 approver，檢查哪些請求已被批准
+    if (isApprover && account) {
+      const updatedRequests = await Promise.all(
+        requestsArray.map(async (request) => {
+          try {
+            // 檢查用戶是否已批准該請求（這裡是佔位邏輯）
+            return { ...request, hasApproved: false };
+          } catch (error) {
+            return { ...request, hasApproved: false };
+          }
+        })
+      );
+
+      setRequests(updatedRequests);
+    } else {
+      setRequests(requestsArray);
+    }
+  } catch (error) {
+    console.error("Error loading requests:", error);
   }
+}
 
   // Contribute to campaign
   async function handleContribute() {
@@ -309,19 +318,7 @@ export default function CampaignPage() {
   {
     console.log('Approving request with:', { index, requestId }); // 在這裡添加
 
-  const response = await fetch('/api/votes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      txHash: '0x123...', // 測試用的交易哈希
-      requestId, // 傳遞 requestId
-      voterAddress: account, // 使用者的地址
-      gasCost: '0.01', // 測試用的 gasCost
-    }),
-  });
-
-  const data = await response.json();
-  console.log('Vote response:', data);
+  
   try {
     setMessage({ text: '', type: '' });
 
