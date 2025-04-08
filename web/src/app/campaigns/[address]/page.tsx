@@ -118,6 +118,7 @@ export default function CampaignPage() {
   }, [address, isConnected, account]);
 
   // Load requests
+  // Load requests
   async function loadRequests() {
     try {
       const campaign = await getCampaignContract(address as string);
@@ -304,80 +305,107 @@ export default function CampaignPage() {
 
 
   // Approve a request
-  async function handleApproveRequest(index: number) {
-    try {
-      setMessage({ text: '', type: '' });
+  async function handleApproveRequest ( index: number, requestId: string )
+  {
+    console.log('Approving request with:', { index, requestId }); // 在這裡添加
 
-      const campaignWithSigner = await getCampaignContractWithSigner(address as string);
+  const response = await fetch('/api/votes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      txHash: '0x123...', // 測試用的交易哈希
+      requestId, // 傳遞 requestId
+      voterAddress: account, // 使用者的地址
+      gasCost: '0.01', // 測試用的 gasCost
+    }),
+  });
 
-      const tx = await campaignWithSigner.approveRequest(index);
-      setMessage({ text: 'Processing approval...', type: 'info' });
-      const receipt = await tx.wait();
+  const data = await response.json();
+  console.log('Vote response:', data);
+  try {
+    setMessage({ text: '', type: '' });
 
-      const gasCost = tx.gasPrice && receipt.gasUsed
-        ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
-        : '0';
+    const campaignWithSigner = await getCampaignContractWithSigner(address as string);
+    const tx = await campaignWithSigner.approveRequest(index);
 
-      // 寫入資料庫（打 API）
-      await fetch('/api/votes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          txHash: receipt.hash,
-          voter: account,
-          campaignAddress: address,
-          requestIndex: index,
-          gasCost,
-        }),
-      });
+    setMessage({ text: 'Processing approval...', type: 'info' });
+    const receipt = await tx.wait();
 
-      setMessage({ text: 'Request approved successfully!', type: 'success' });
+    const gasCost = tx.gasPrice && receipt.gasUsed
+      ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
+      : '0';
+    console.log('Submitting vote with:', {
+      txHash: receipt.hash,
+      requestId,
+      voterAddress: account,
+      gasCost,
+    });
 
-      // 重新載入資料
-      await loadRequests();
-    } catch (err: any) {
-      console.error("Approve request failed:", err);
-      setMessage({
-        text: err.reason || err.message || 'Failed to approve request. Please try again.',
-        type: 'error'
-      });
-    }
+    await fetch('/api/votes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        txHash: receipt.hash,
+        requestId,             // ✅ Prisma 需要這個 UUID
+        voterAddress: account, // ✅ Prisma 用這欄做關聯
+        gasCost,
+      }),
+    });
+
+    setMessage({ text: 'Request approved successfully!', type: 'success' });
+    await loadRequests();
+  } catch (err: any) {
+    console.error("Approve request failed:", err);
+    setMessage({
+      text: err.reason || err.message || 'Failed to approve request. Please try again.',
+      type: 'error'
+    });
   }
+}
+
 
 
   // Finalize a request
-  async function handleFinalizeRequest(index: number) {
-    try {
-      setMessage({ text: '', type: '' });
+  async function handleFinalizeRequest(index: number, requestId: string) {
+  try {
+    setMessage({ text: '', type: '' });
 
-      // Get signer contract
-      const campaignWithSigner = await getCampaignContractWithSigner(address as string);
+    const campaignWithSigner = await getCampaignContractWithSigner(address as string);
+    const tx = await campaignWithSigner.finalizeRequest(index);
 
-      // Finalize request transaction
-      const tx = await campaignWithSigner.finalizeRequest(index);
+    setMessage({ text: 'Finalizing request...', type: 'info' });
+    const receipt = await tx.wait();
 
-      // Wait for transaction to complete
-      setMessage({ text: 'Processing finalization...', type: 'info' });
-      await tx.wait();
+    const gasCost = tx.gasPrice && receipt.gasUsed
+      ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
+      : '0';
 
-      // Update UI
-      setMessage({ text: 'Request finalized successfully!', type: 'success' });
+    await fetch('/api/finalizations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        txHash: receipt.hash,
+        requestId,
+        fundSeekerAddr: account, // 現在登入的 user
+        campaignAddr: address,
+        amount: parseFloat(requests[index].value), // 記得保證這是 number
+        gasCost
+      })
+    });
 
-      // Reload data
-      const provider = getProvider();
-      const newBalance = await provider.getBalance(address as string);
-      setBalance(newBalance.toString());
-
-      // Reload requests
-      await loadRequests();
-    } catch (err: any) {
-      console.error("Finalize request failed:", err);
-      setMessage({
-        text: err.reason || err.message || 'Failed to finalize request. Please try again.',
-        type: 'error'
-      });
-    }
+    setMessage({ text: 'Request finalized successfully!', type: 'success' });
+    await loadRequests();
+    const provider = getProvider();
+    const newBalance = await provider.getBalance(address as string);
+    setBalance(newBalance.toString());
+  } catch (err: any) {
+    console.error("Finalize request failed:", err);
+    setMessage({
+      text: err.reason || err.message || 'Failed to finalize request.',
+      type: 'error'
+    });
   }
+}
 
   // Display formatted ETH amount
   function displayEther(wei: string) {

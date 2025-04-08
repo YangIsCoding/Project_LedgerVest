@@ -11,9 +11,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { txHash, requestId, voterAddress, gasCost } = req.body;
 
   // 检查必填字段
-  if (!txHash || !requestId || !voterAddress) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+  if (!txHash || !requestId || !voterAddress || gasCost === undefined) {
+    console.error('❌ Missing or invalid required fields:', {
+        txHash,
+        requestId,
+        voterAddress,
+        gasCost,
+    });
+
+    if (!txHash) {
+        console.error('❌ Missing txHash');
+    }
+    if (!requestId) {
+        console.error('❌ Missing requestId');
+    }
+    if (!voterAddress) {
+        console.error('❌ Missing voterAddress');
+    }
+    if (gasCost === undefined) {
+        console.error('❌ Missing or invalid gasCost');
+    }
+
+    return res.status(400).json({ error: 'Missing or invalid required fields' });
+    }
 
   try {
     // 确保用户存在或创建新用户

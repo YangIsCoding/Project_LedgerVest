@@ -15,8 +15,8 @@ interface SpendingRequestsProps {
   isCreatingRequest: boolean;
   requests: any[];
   displayEther: (wei: string) => string;
-  handleApproveRequest: (index: number) => Promise<void>;
-  handleFinalizeRequest: (index: number) => Promise<void>;
+  handleApproveRequest: (index: number, requestId: string) => Promise<void>;
+  handleFinalizeRequest: (index: number,  requestId: string) => Promise<void>;
   isApprover: boolean;
 }
 
@@ -37,7 +37,9 @@ export default function SpendingRequests({
   handleApproveRequest,
   handleFinalizeRequest,
   isApprover,
-}: SpendingRequestsProps) {
+}: SpendingRequestsProps )
+{console.log('Requests:', requests);
+  
   return (
     <div className="bg-white rounded-lg shadow-xs overflow-hidden">
       <div className="p-6">
@@ -174,7 +176,7 @@ export default function SpendingRequests({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {!request.complete && isApprover && (
                         <button
-                          onClick={() => handleApproveRequest(request.index)}
+                          onClick={() => handleApproveRequest(request.index, request.requestId)}
                           className={`text-blue-600 hover:text-blue-900 mr-4`}
                         >
                           Approve
@@ -182,7 +184,7 @@ export default function SpendingRequests({
                       )}
                       {!request.complete && isManager && (
                         <button
-                          onClick={() => handleFinalizeRequest(request.index)}
+                          onClick={() => handleFinalizeRequest(request.index, request.requestId)}
                           className="text-green-600 hover:text-green-900"
                         >
                           Finalize
@@ -190,7 +192,8 @@ export default function SpendingRequests({
                       )}
                     </td>
                   </tr>
-                ))}
+                ) )}
+                  
               </tbody>
             </table>
           </div>
