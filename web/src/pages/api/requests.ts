@@ -16,9 +16,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     gasCost
   } = req.body;
 
-  // ✅ 檢查必填欄位
-  if (!txHash || !campaignAddress || !reason || typeof amount !== 'number') {
-    return res.status(400).json({ error: 'Missing required fields' });
+  console.log('📥 Incoming request to /api/requests:', req.body);
+
+  const parsedAmount = parseFloat(amount);
+  const parsedGasCost = gasCost !== undefined ? parseFloat(gasCost) : null;
+
+  if (!txHash || !campaignAddress || !reason || isNaN(parsedAmount)) {
+    return res.status(400).json({ error: 'Missing or invalid required fields' });
   }
 
   try {
@@ -27,8 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         txHash,
         campaignAddress,
         reason,
-        amount,
-        gasCost: gasCost !== undefined ? parseFloat(gasCost) : null
+        amount: parsedAmount,
+        gasCost: parsedGasCost
       }
     });
 

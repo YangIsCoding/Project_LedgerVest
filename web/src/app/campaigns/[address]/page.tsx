@@ -253,31 +253,43 @@ export default function CampaignPage() {
       setIsCreatingRequest(true);
       setMessage({ text: '', type: '' });
 
-      // Convert ETH to Wei
       const valueInWei = ethers.parseEther(requestAmount);
-
-      // Get signer contract
       const campaignWithSigner = await getCampaignContractWithSigner(address as string);
 
-      // Create request transaction
       const tx = await campaignWithSigner.createRequest(
         requestDescription,
         valueInWei,
         requestRecipient
       );
 
-      // Wait for transaction to complete
       setMessage({ text: 'Processing transaction...', type: 'info' });
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      // Update UI
+      // 計算 gas 成本
+      const gasCost = tx.gasPrice && receipt.gasUsed
+        ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
+        : '0';
+
+      // 寫入資料庫
+      await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          txHash: receipt.hash,
+          campaignAddress: address,
+          reason: requestDescription, // ✅ 改為 reason
+          amount: parseFloat(requestAmount), // ✅ 確保是 number
+          gasCost,
+        }),
+      });
+
+
+      // UI 更新
       setMessage({ text: 'Request created successfully!', type: 'success' });
       setRequestDescription('');
       setRequestAmount('');
       setRequestRecipient('');
       setShowCreateForm(false);
-
-      // Reload requests
       await loadRequests();
     } catch (err: any) {
       console.error("Create request failed:", err);
@@ -290,25 +302,38 @@ export default function CampaignPage() {
     }
   }
 
+
   // Approve a request
   async function handleApproveRequest(index: number) {
     try {
       setMessage({ text: '', type: '' });
 
-      // Get signer contract
       const campaignWithSigner = await getCampaignContractWithSigner(address as string);
 
-      // Approve request transaction
       const tx = await campaignWithSigner.approveRequest(index);
-
-      // Wait for transaction to complete
       setMessage({ text: 'Processing approval...', type: 'info' });
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      // Update UI
+      const gasCost = tx.gasPrice && receipt.gasUsed
+        ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
+        : '0';
+
+      // 寫入資料庫（打 API）
+      await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          txHash: receipt.hash,
+          voter: account,
+          campaignAddress: address,
+          requestIndex: index,
+          gasCost,
+        }),
+      });
+
       setMessage({ text: 'Request approved successfully!', type: 'success' });
 
-      // Reload requests
+      // 重新載入資料
       await loadRequests();
     } catch (err: any) {
       console.error("Approve request failed:", err);
@@ -318,6 +343,7 @@ export default function CampaignPage() {
       });
     }
   }
+
 
   // Finalize a request
   async function handleFinalizeRequest(index: number) {
