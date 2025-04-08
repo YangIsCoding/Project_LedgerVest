@@ -30,7 +30,16 @@ interface Request {
 
 export default function CampaignPage() {
   const router = useRouter();
-  const { address } = useParams();
+  const params = useParams();
+  const address = params?.address as string | undefined;
+
+  if (!address) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-red-600">Invalid campaign address.</p>
+      </div>
+    );
+  }
   const { isConnected, account } = useWallet();
 
   // Campaign state
@@ -179,25 +188,39 @@ export default function CampaignPage() {
       setIsContributing(true);
       setMessage({ text: '', type: '' });
 
-      // Convert ETH to Wei
       const valueInWei = ethers.parseEther(contributionAmount);
-
-      // Get signer contract
       const campaignWithSigner = await getCampaignContractWithSigner(address as string);
-
-      // Send contribution transaction
+      
+      // 發送交易
       const tx = await campaignWithSigner.contribute({ value: valueInWei });
 
-      // Wait for transaction to complete
       setMessage({ text: 'Processing transaction...', type: 'info' });
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      // Update UI
+      // 計算 gas cost（ETH）
+      const gasCost = tx.gasPrice && receipt.gasUsed
+        ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
+        : '0';
+
+      // 送資料到 API 儲存 contribution
+      await fetch('/api/contributions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          txHash: receipt.hash,
+          contributorAddress: account,
+          campaignAddress: address,
+          amount: contributionAmount,
+          gasCost,
+          note: '' // optional: 可讓用戶自訂備註
+        })
+      });
+
+      // 更新 UI
       setMessage({ text: 'Contribution successful!', type: 'success' });
       setContributionAmount('');
       setIsApprover(true);
 
-      // Reload data
       const provider = getProvider();
       const newBalance = await provider.getBalance(address as string);
       setBalance(newBalance.toString());
@@ -215,6 +238,7 @@ export default function CampaignPage() {
       setIsContributing(false);
     }
   }
+
 
   // Create a new request
   async function handleCreateRequest(e: React.FormEvent) {
