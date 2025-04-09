@@ -17,6 +17,7 @@ export default function CreateCampaignPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
+  const [contactInfo, setContactInfo] = useState('');
 
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -24,7 +25,7 @@ export default function CreateCampaignPage() {
   async function handleCreateCampaign(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!minimumContribution || !title || !targetAmount) {
+    if (!minimumContribution || !title || !targetAmount || !contactInfo) {
       setMessage({ text: 'Please fill in all required fields', type: 'error' });
       return;
     }
@@ -43,7 +44,6 @@ export default function CreateCampaignPage() {
 
       const receipt = await tx.wait();
 
-      // Parse logs to extract campaign address
       const factoryInterface = new Interface([
         'event CampaignCreated(address campaignAddress, address creator)'
       ]);
@@ -82,6 +82,7 @@ export default function CreateCampaignPage() {
           contractAddress: campaignAddress,
           gasCost,
           commission: '0.01',
+          contactInfo,
         })
       });
 
@@ -94,6 +95,7 @@ export default function CreateCampaignPage() {
       setTitle('');
       setDescription('');
       setTargetAmount('');
+      setContactInfo('');
 
       setTimeout(() => {
         router.push('/');
@@ -148,6 +150,8 @@ export default function CreateCampaignPage() {
         setMinimumContribution={setMinimumContribution}
         targetAmount={targetAmount}
         setTargetAmount={setTargetAmount}
+        contactInfo={contactInfo}
+        setContactInfo={setContactInfo}
         handleCreateCampaign={handleCreateCampaign}
         isCreating={isCreating}
       />

@@ -11,6 +11,8 @@ interface CreateCampaignFormProps {
   setMinimumContribution: (value: string) => void;
   targetAmount: string;
   setTargetAmount: (value: string) => void;
+  contactInfo: string;
+  setContactInfo: (value: string) => void;
   handleCreateCampaign: (e: React.FormEvent) => Promise<void>;
   isCreating: boolean;
 }
@@ -24,6 +26,8 @@ const CreateCampaignForm: React.FC<CreateCampaignFormProps> = ({
   setMinimumContribution,
   targetAmount,
   setTargetAmount,
+  contactInfo,
+  setContactInfo,
   handleCreateCampaign,
   isCreating,
 }) => {
@@ -60,6 +64,21 @@ const CreateCampaignForm: React.FC<CreateCampaignFormProps> = ({
                 className="block w-full px-4 py-3 border border-gray-300 rounded-lg"
                 placeholder="Describe your campaign's purpose and goals..."
                 rows={4}
+                required
+              />
+            </div>
+
+            {/* Contact Info */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contact Info
+              </label>
+              <input
+                type="text"
+                value={contactInfo}
+                onChange={(e) => setContactInfo(e.target.value)}
+                className="block w-full px-4 py-3 border border-gray-300 rounded-lg"
+                placeholder="Email or other contact method"
                 required
               />
             </div>
@@ -138,8 +157,7 @@ const CreateCampaignForm: React.FC<CreateCampaignFormProps> = ({
               <button
                 type="submit"
                 disabled={isCreating}
-                className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 ${isCreating ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 ${isCreating ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 {isCreating ? (
                   <span className="flex items-center">

@@ -50,7 +50,13 @@ export default function CampaignPage() {
   const [approversCount, setApproversCount] = useState("0");
   const [requests, setRequests] = useState<Request[]>([]);
   const [isApprover, setIsApprover] = useState(false);
-  const [isManager, setIsManager] = useState(false);
+  const [ isManager, setIsManager ] = useState( false );
+  const [campaignTitle, setCampaignTitle] = useState('');
+  const [campaignDescription, setCampaignDescription] = useState('');
+  const [campaignTargetAmount, setCampaignTargetAmount] = useState('');
+  const [ campaignCreatedAt, setCampaignCreatedAt ] = useState( '' );
+  const [campaignContactInfo, setCampaignContactInfo] = useState('');
+
 
   // UI state
   const [contributionAmount, setContributionAmount] = useState("");
@@ -99,7 +105,16 @@ export default function CampaignPage() {
         setManager(mgr);
         setMinimumContribution(minContr.toString());
         setBalance(bal.toString());
-        setApproversCount(approversCountBN.toString());
+        setApproversCount( approversCountBN.toString() );
+        const dbRes = await fetch(`/api/campaigns/${address?.toLocaleLowerCase()}`);
+        if (dbRes.ok) {
+          const data = await dbRes.json();
+          setCampaignTitle(data.title || '');
+          setCampaignDescription(data.description || '');
+          setCampaignTargetAmount(data.targetAmount?.toString() || '');
+          setCampaignCreatedAt( new Date( data.createdAt ).toLocaleString() );
+          setCampaignContactInfo(data.contactInfo || '');
+        }
 
         // Load requests
         await loadRequests();
@@ -443,6 +458,15 @@ export default function CampaignPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
+          {campaignTitle && (
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">{campaignTitle}</h2>
+              <p className="text-gray-600 mt-1">{campaignDescription}</p>
+              <p className="text-sm text-gray-500 mt-2">🎯 Target: {campaignTargetAmount} ETH</p>
+              <p className="text-sm text-gray-400">📅 Created at: {campaignCreatedAt}</p>
+              <p className="text-sm text-gray-400">📩 Contact: {campaignContactInfo}</p>
+            </div>
+          )}
           <CampaignDetails
             address={address as string}
             manager={manager}

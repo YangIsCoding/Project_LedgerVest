@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { randomUUID } from 'crypto'; // ✅ 引入 uuid
 
 const prisma = new PrismaClient();
 
@@ -14,15 +15,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       contractAddress,
       gasCost,
       commission,
+      contactInfo
     } = req.body;
 
     try {
       await prisma.user.upsert({
         where: { walletAddress },
-        update: { lastLogin: new Date() },
+        update: { lastLogin: new Date(), contactInfo },
         create: {
-          id: walletAddress,
+          id: randomUUID(), // ✅ 用 uuid 作為 primary key
           walletAddress,
+          contactInfo,
         },
       });
 
