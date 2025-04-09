@@ -141,3 +141,11 @@ model Finalization {
     gasCost   Float?
     timestamp DateTime @default(now())
 }
+
+model ContactMessage {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  message     String
+  createdAt   DateTime @default(now())
+}
