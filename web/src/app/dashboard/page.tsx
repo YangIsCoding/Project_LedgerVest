@@ -6,6 +6,8 @@ import { useWallet } from '@/lib/context/WalletContext';
 import { getCampaignContract, formatEther, getProvider } from '@/utils/ethers';
 import { FaWallet, FaFileContract } from 'react-icons/fa';
 import CampaignsICreated from '@/components/dashboard/YourCreatedCampaigns';
+import FundsRaisedChart from '@/components/dashboard/FundsRaisedChart';
+
 
 // Import the new components
 import AdminDashboardSection from '@/components/dashboard/AdminDashboardSection';
@@ -68,6 +70,8 @@ export default function Dashboard() {
     pendingRequests: 0
   } );
   const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
+  const [fundsRaisedData, setFundsRaisedData] = useState<{ date: string; totalAmount: number }[]>([]);
+
 
 
   // Check if connected wallet is an admin
@@ -95,17 +99,47 @@ export default function Dashboard() {
 
       if (account) {
         try {
+          // 取得使用者創建的 campaign
           const res = await fetch(`/api/created-campaigns?walletAddress=${account}`);
           if (res.ok) {
             const data = await res.json();
-            setCreatedCampaigns(data); // 這邊 data 應該是 CreatedCampaign[]
+            setCreatedCampaigns(data);
           } else {
             console.error("Failed to load created campaigns.");
           }
+
+          // 取得該使用者募資資料
+          const chartRes = await fetch(`/api/stats/funds-raised?walletAddress=${account}`);
+          if (chartRes.ok) {
+            const contributions = await chartRes.json();
+
+            // 整理成每日累積金額資料
+            const dailyTotals: Record<string, number> = {};
+            contributions.forEach((c: { amount: number; timestamp: string }) => {
+              const date = new Date(c.timestamp).toLocaleDateString();
+              dailyTotals[date] = (dailyTotals[date] || 0) + c.amount;
+            });
+
+            const chartData: { date: string; totalAmount: number }[] = [];
+            let runningTotal = 0;
+
+            Object.entries(dailyTotals).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+              .forEach(([date, amount]) => {
+                runningTotal += amount;
+                chartData.push({ date, totalAmount: runningTotal });
+              });
+
+
+            setFundsRaisedData(chartData);
+          } else {
+            console.error("Failed to load fund chart data.");
+          }
         } catch (err) {
-          console.error("Error fetching created campaigns:", err);
+          console.error("Error fetching created campaigns or fund chart data:", err);
         }
       }
+      
+
 
 
       try {
@@ -340,6 +374,7 @@ export default function Dashboard() {
         formatEther={formatEther}
       />
       <CampaignsICreated createdCampaigns={createdCampaigns} />
+      <FundsRaisedChart data={fundsRaisedData} />
 
       {/* Pending Requests to Vote On */}
       <PendingVotes
