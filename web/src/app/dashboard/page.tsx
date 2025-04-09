@@ -18,6 +18,9 @@ import UserStats from '@/components/dashboard/UserStats';
 import CampaignManagement from '@/components/dashboard/CampaignManagement';
 import YourInvestments from '@/components/dashboard/YourInvestments';
 import PendingVotes from '@/components/dashboard/PendingVotes';
+import FinalizationsChart from '@/components/dashboard/FinalizationsChart';
+import CampaignPerformanceChart from '@/components/dashboard/CampaignPerformanceChart';
+
 
 // Admin wallet addresses - replace with the actual admin addresses
 const ADMIN_WALLETS = [
@@ -70,7 +73,15 @@ export default function Dashboard() {
     pendingRequests: 0
   } );
   const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
-  const [fundsRaisedData, setFundsRaisedData] = useState<{ date: string; totalAmount: number }[]>([]);
+  const [ fundsRaisedData, setFundsRaisedData ] = useState<{ date: string; totalAmount: number }[]>( [] );
+  const [finalizationsData, setFinalizationsData] = useState<{ date: string, amount: number }[]>([]);
+  const [campaignPerformanceData, setCampaignPerformanceData] = useState<
+  { title: string; targetAmount: number; finalizedAmount: number }[]
+    >( [] );
+  
+
+  
+
 
 
 
@@ -134,6 +145,58 @@ export default function Dashboard() {
           } else {
             console.error("Failed to load fund chart data.");
           }
+
+
+
+
+          const finalRes = await fetch(`/api/stats/finalizations-received?walletAddress=${account}`);
+          if (finalRes.ok) {
+            const finals = await finalRes.json();
+
+            const daily: Record<string, number> = {};
+            finals.forEach((f: { amount: number; timestamp: string }) => {
+              const date = new Date(f.timestamp).toLocaleDateString();
+              daily[date] = (daily[date] || 0) + f.amount;
+            });
+
+            const finalChartData: { date: string; amount: number }[] = [];
+            let total = 0;
+
+            Object.entries(daily)
+              .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+              .forEach(([date, amount]) => {
+                total += amount;
+                finalChartData.push({ date, amount: Number(total.toFixed(4)) });
+            });
+
+
+            setFinalizationsData(finalChartData);
+          } else {
+            console.error("Failed to load finalizations chart data.");
+          }
+
+
+
+          // 取得 campaign performance 資料
+          const perfRes = await fetch(`/api/stats/campaign-performance?walletAddress=${account}`);
+          if (perfRes.ok) {
+            const perfData = await perfRes.json();
+
+            // 👉 轉換 wei 為 ETH
+            const normalized = perfData.map((item: any) => ({
+              ...item,
+              finalizedAmount: Number((item.finalizedAmount / 1e18).toFixed(4)),
+            }));
+
+            setCampaignPerformanceData(normalized);
+          } else {
+            console.error("Failed to load campaign performance data.");
+          }
+
+
+          
+          
+
         } catch (err) {
           console.error("Error fetching created campaigns or fund chart data:", err);
         }
@@ -349,6 +412,10 @@ export default function Dashboard() {
               formatEther={formatEther}
             />
             <CampaignsICreated createdCampaigns={createdCampaigns} />
+            <FundsRaisedChart data={fundsRaisedData} />
+            <FinalizationsChart data={finalizationsData} />
+            <CampaignPerformanceChart data={campaignPerformanceData} />
+            
             <PendingVotes
               pendingRequests={pendingRequests}
               formatEther={formatEther}
@@ -375,6 +442,8 @@ export default function Dashboard() {
       />
       <CampaignsICreated createdCampaigns={createdCampaigns} />
       <FundsRaisedChart data={fundsRaisedData} />
+      <FinalizationsChart data={finalizationsData} />
+      <CampaignPerformanceChart data={campaignPerformanceData} />
 
       {/* Pending Requests to Vote On */}
       <PendingVotes
