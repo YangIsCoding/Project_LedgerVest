@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     campaignAddress,
     amount,
     gasCost,
-    note
+    note,
+    contactInfo = 'N/A',
   } = req.body;
 
   if (!txHash || !contributorAddress || !campaignAddress || !amount) {
@@ -26,8 +28,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { walletAddress: contributorAddress },
       update: { lastLogin: new Date() },
       create: {
-        id: contributorAddress,
-        walletAddress: contributorAddress
+        id: randomUUID(),
+        walletAddress: contributorAddress,
+        contactInfo: "N/A",
       },
     });
 
@@ -36,10 +39,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         txHash,
         contributorAddress,
         campaignAddress,
-        amount: parseFloat(amount),
-        gasCost: gasCost ? parseFloat(gasCost) : 0,
-        note: note || null
-      }
+        amount: Number(amount),
+        gasCost: gasCost ? Number(gasCost) : 0,
+        note: note || null,
+      },
     });
 
     return res.status(201).json({ success: true, contribution });

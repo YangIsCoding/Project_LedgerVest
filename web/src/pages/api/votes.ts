@@ -43,6 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       create: {
         id: voterAddress,
         walletAddress: voterAddress,
+        contactInfo: 'N/A'
       },
     });
 

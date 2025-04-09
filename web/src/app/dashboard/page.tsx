@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useWallet } from '@/lib/context/WalletContext';
 import { getCampaignContract, formatEther, getProvider } from '@/utils/ethers';
 import { FaWallet, FaFileContract } from 'react-icons/fa';
+import CampaignsICreated from '@/components/dashboard/YourCreatedCampaigns';
 
 // Import the new components
 import AdminDashboardSection from '@/components/dashboard/AdminDashboardSection';
@@ -32,6 +33,8 @@ interface CampaignSummary {
   requestCount: number;
 }
 
+
+
 interface PendingRequest {
   campaignAddress: string;
   requestIndex: number;
@@ -40,6 +43,17 @@ interface PendingRequest {
   recipient: string;
   approvalCount: string;
 }
+
+interface CreatedCampaign {
+  id: string;
+  title: string;
+  description: string;
+  contractAddress: string;
+  targetAmount: number;
+  createdAt: string;
+}
+
+
 
 export default function Dashboard() {
   const { isConnected, account, campaigns, loadCampaigns } = useWallet();
@@ -52,7 +66,9 @@ export default function Dashboard() {
     contributors: 0,
     totalFunds: '0',
     pendingRequests: 0
-  });
+  } );
+  const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
+
 
   // Check if connected wallet is an admin
   useEffect(() => {
@@ -76,6 +92,21 @@ export default function Dashboard() {
         setIsLoading(false);
         return;
       }
+
+      if (account) {
+        try {
+          const res = await fetch(`/api/created-campaigns?walletAddress=${account}`);
+          if (res.ok) {
+            const data = await res.json();
+            setCreatedCampaigns(data); // 這邊 data 應該是 CreatedCampaign[]
+          } else {
+            console.error("Failed to load created campaigns.");
+          }
+        } catch (err) {
+          console.error("Error fetching created campaigns:", err);
+        }
+      }
+
 
       try {
         const summariesPromises = campaigns.map(async (address) => {
@@ -283,7 +314,7 @@ export default function Dashboard() {
               userContributions={userContributions}
               formatEther={formatEther}
             />
-
+            <CampaignsICreated createdCampaigns={createdCampaigns} />
             <PendingVotes
               pendingRequests={pendingRequests}
               formatEther={formatEther}
@@ -308,6 +339,7 @@ export default function Dashboard() {
         userContributions={userContributions}
         formatEther={formatEther}
       />
+      <CampaignsICreated createdCampaigns={createdCampaigns} />
 
       {/* Pending Requests to Vote On */}
       <PendingVotes

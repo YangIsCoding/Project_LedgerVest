@@ -15,6 +15,8 @@ interface CampaignSummary {
   balance: string;
   approversCount: number;
   isLoading: boolean;
+  title?: string;
+  createdAt?: string;
 }
 
 export default function ProjectsPage() {
@@ -62,7 +64,20 @@ export default function ProjectsPage() {
 
             // Get balance from provider
             const provider = getProvider(); // get the provider instance
-            const balance = provider ? await provider.getBalance(address) : '0';
+            const balance = provider ? await provider.getBalance( address ) : '0';
+            
+            let title = '';
+            let createdAt = '';
+            try {
+              const res = await fetch(`/api/campaigns/${address}`);
+              if (res.ok) {
+                const data = await res.json();
+                title = data.title || '';
+                createdAt = new Date(data.createdAt).toLocaleDateString(); // or .toLocaleString()
+              }
+            } catch (err) {
+              console.error(`Failed to fetch metadata for campaign ${address}:`, err);
+            }
 
             return {
               address,
@@ -70,7 +85,9 @@ export default function ProjectsPage() {
               minimumContribution: minimumContribution.toString(),
               balance: balance.toString(),
               approversCount: Number(approversCount),
-              isLoading: false
+              isLoading: false,
+              title,
+              createdAt,
             };
           } catch (error) {
             console.error(`Error fetching data for campaign ${address}:`, error);
