@@ -1,23 +1,20 @@
-stages:
-  - build
-
 build-app:
   stage: build
-  image: node:18
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - docker info
   script:
-    - echo "📦 Installing dependencies..."
-    - rm -rf node_modules 
-    - rm -rf web/.next
-    - npm install
-    - echo "🚧 Building Next.js app..."
-    - npm run build
+    - echo "🐳 Building Docker Compose stack..."
+    - docker compose -f docker-compose.yml build
+    - docker image ls
+    - docker save fintech512-project_ledgervest-web -o app.tar
   artifacts:
     paths:
-      - web/.next
-      - web/public
-      - web/package.json
-      - web/package-lock.json
+      - app.tar
     expire_in: 1 hour
   only:
     - main
-  cache: {}  # Explicitly disable cache
