@@ -12,9 +12,9 @@ deploy-prod:
     - scp app.tar $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
     - ssh $DEPLOY_USER@$DEPLOY_HOST '
         cd ~/fintech512-project_ledgervest &&
-        docker load -i app.tar &&
-        docker compose down &&
-        docker compose up -d
+        sudo docker load -i app.tar &&
+        sudo docker compose down &&
+        sudo docker compose up -d
       '
   only:
     - main
