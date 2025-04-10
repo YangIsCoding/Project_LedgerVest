@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useWallet } from '@/lib/context/WalletContext';
 import { getCampaignContract, formatEther, getProvider } from '@/utils/ethers';
 import { FaWallet, FaFileContract } from 'react-icons/fa';
+import { useSession } from 'next-auth/react';
+
+
+// Components
 import CampaignsICreated from '@/components/dashboard/YourCreatedCampaigns';
 import FundsRaisedChart from '@/components/dashboard/FundsRaisedChart';
-
-
-// Import the new components
 import AdminDashboardSection from '@/components/dashboard/AdminDashboardSection';
 import UserDashboardSection from '@/components/dashboard/UserDashboardSection';
 import AdminStats from '@/components/dashboard/AdminStats';
@@ -22,13 +23,22 @@ import FinalizationsChart from '@/components/dashboard/FinalizationsChart';
 import CampaignPerformanceChart from '@/components/dashboard/CampaignPerformanceChart';
 
 
-// Admin wallet addresses - replace with the actual admin addresses
-const ADMIN_WALLETS = [
-
+// Constants
+const ADMIN_WALLETS: string[] = [
   '0xc3DbC713d5dd66CD2f529c6162Cf06dc9fe18b01',
-  '0xb7695977d25D95d23b45BD6f9ACB74A5d332D28d'
+  '0xb7695977d25D95d23b45BD6f9ACB74A5d332D28d',
+  '0xaada21fD544dA24B3b96E465C4c7074f4D6E8632'
 ];
 
+const ADMIN_EMAILS: string[] = [
+  'chrisliu504638@gmail.com',
+  'Junjieja.li2@gmail.com',
+  'freddyplati@gmail.com',
+  'howdywu@gmail.com',
+  'allanustw@gmail.com'
+];
+
+// Types
 interface CampaignSummary {
   address: string;
   manager: string;
@@ -37,8 +47,6 @@ interface CampaignSummary {
   approversCount: number;
   requestCount: number;
 }
-
-
 
 interface PendingRequest {
   campaignAddress: string;
@@ -58,185 +66,134 @@ interface CreatedCampaign {
   createdAt: string;
 }
 
+interface ChartData {
+  date: string;
+  totalAmount: number;
+}
 
+interface FinalizationData {
+  date: string;
+  amount: number;
+}
 
-export default function Dashboard() {
+interface CampaignPerformance {
+  title: string;
+  targetAmount: number;
+  finalizedAmount: number;
+}
+
+export default function Dashboard ()
+{
+  const { data: session, status } = useSession();
   const { isConnected, account, campaigns, loadCampaigns } = useWallet();
+  // 從 session 拿到 email
+  const userEmail = session?.user?.email;
+
+  // 判斷是不是 admin
+  const isEmailAdmin = ADMIN_EMAILS.includes(userEmail || '');
+  const isWalletAdmin = ADMIN_WALLETS.includes(account || '');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [userContributions, setUserContributions] = useState<CampaignSummary[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
-  const [campaignSummaries, setCampaignSummaries] = useState<CampaignSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalStats, setTotalStats] = useState({
-    contributors: 0,
-    totalFunds: '0',
-    pendingRequests: 0
-  } );
-  const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
-  const [ fundsRaisedData, setFundsRaisedData ] = useState<{ date: string; totalAmount: number }[]>( [] );
-  const [finalizationsData, setFinalizationsData] = useState<{ date: string, amount: number }[]>([]);
-  const [campaignPerformanceData, setCampaignPerformanceData] = useState<
-  { title: string; targetAmount: number; finalizedAmount: number }[]
-    >( [] );
   
-
-  
-
-
-
-
-  // Check if connected wallet is an admin
   useEffect(() => {
-    if (isConnected && account) {
-      // Check if the wallet address is in the admin list
-      setIsAdmin(ADMIN_WALLETS.includes(account));
+    if (typeof window !== 'undefined') {
+      console.log('Updating isAdmin:', { isWalletAdmin, isEmailAdmin });
+      setIsAdmin(isWalletAdmin || isEmailAdmin);
     }
-  }, [isConnected, account]);
+  }, [isWalletAdmin, isEmailAdmin]);
 
-  // Load campaigns when wallet connects
   useEffect(() => {
     if (isConnected) {
       loadCampaigns();
     }
   }, [isConnected, loadCampaigns]);
 
-  // Fetch campaign data
+  //hooks
+  const [isLoading, setIsLoading] = useState(true);
+  const [userContributions, setUserContributions] = useState<CampaignSummary[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
+  const [campaignSummaries, setCampaignSummaries] = useState<CampaignSummary[]>([]);
+  const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
+  const [fundsRaisedData, setFundsRaisedData] = useState<ChartData[]>([]);
+  const [finalizationsData, setFinalizationsData] = useState<FinalizationData[]>([]);
+  const [campaignPerformanceData, setCampaignPerformanceData] = useState<CampaignPerformance[]>([]);
+  const [totalStats, setTotalStats] = useState({ contributors: 0, totalFunds: '0', pendingRequests: 0 });
+
+
   useEffect(() => {
-    const fetchCampaignData = async () => {
-      if (!isConnected || campaigns.length === 0) {
-        setIsLoading(false);
-        return;
-      }
+    const fetchData = async () => {
+      if (!isConnected || campaigns.length === 0) return setIsLoading(false);
 
-      if (account) {
-        try {
-          // 取得使用者創建的 campaign
-          const res = await fetch(`/api/created-campaigns?walletAddress=${account}`);
-          if (res.ok) {
-            const data = await res.json();
-            setCreatedCampaigns(data);
-          } else {
-            console.error("Failed to load created campaigns.");
-          }
+      try {
+        if (account) {
+          const [createdRes, fundChartRes, finalRes, perfRes] = await Promise.all([
+            fetch(`/api/created-campaigns?walletAddress=${account}`),
+            fetch(`/api/stats/funds-raised?walletAddress=${account}`),
+            fetch(`/api/stats/finalizations-received?walletAddress=${account}`),
+            fetch(`/api/stats/campaign-performance?walletAddress=${account}`)
+          ]);
 
-          // 取得該使用者募資資料
-          const chartRes = await fetch(`/api/stats/funds-raised?walletAddress=${account}`);
-          if (chartRes.ok) {
-            const contributions = await chartRes.json();
-
-            // 整理成每日累積金額資料
-            const dailyTotals: Record<string, number> = {};
+          if (createdRes.ok) setCreatedCampaigns(await createdRes.json());
+          if (fundChartRes.ok) {
+            const contributions = await fundChartRes.json();
+            const daily: Record<string, number> = {};
             contributions.forEach((c: { amount: number; timestamp: string }) => {
               const date = new Date(c.timestamp).toLocaleDateString();
-              dailyTotals[date] = (dailyTotals[date] || 0) + c.amount;
+              daily[date] = (daily[date] || 0) + c.amount;
             });
-
-            const chartData: { date: string; totalAmount: number }[] = [];
-            let runningTotal = 0;
-
-            Object.entries(dailyTotals).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-              .forEach(([date, amount]) => {
-                runningTotal += amount;
-                chartData.push({ date, totalAmount: runningTotal });
-              });
-
-
-            setFundsRaisedData(chartData);
-          } else {
-            console.error("Failed to load fund chart data.");
+            let total = 0;
+            const formatted: ChartData[] = Object.entries(daily).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+              .map(([date, amount]) => ({ date, totalAmount: total += amount }));
+            setFundsRaisedData(formatted);
           }
 
-
-
-
-          const finalRes = await fetch(`/api/stats/finalizations-received?walletAddress=${account}`);
           if (finalRes.ok) {
             const finals = await finalRes.json();
-
-            const daily: Record<string, number> = {};
+            const finalDaily: Record<string, number> = {};
             finals.forEach((f: { amount: number; timestamp: string }) => {
               const date = new Date(f.timestamp).toLocaleDateString();
-              daily[date] = (daily[date] || 0) + f.amount;
+              finalDaily[date] = (finalDaily[date] || 0) + f.amount;
             });
-
-            const finalChartData: { date: string; amount: number }[] = [];
-            let total = 0;
-
-            Object.entries(daily)
+            let cumulative = 0;
+            const finalChart: FinalizationData[] = Object.entries(finalDaily)
               .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-              .forEach(([date, amount]) => {
-                total += amount;
-                finalChartData.push({ date, amount: Number(total.toFixed(4)) });
-            });
-
-
-            setFinalizationsData(finalChartData);
-          } else {
-            console.error("Failed to load finalizations chart data.");
+              .map(([date, amount]) => ({ date, amount: Number((cumulative += amount).toFixed(4)) }));
+            setFinalizationsData(finalChart);
           }
 
-
-
-          // 取得 campaign performance 資料
-          const perfRes = await fetch(`/api/stats/campaign-performance?walletAddress=${account}`);
           if (perfRes.ok) {
             const perfData = await perfRes.json();
-
-            // 👉 轉換 wei 為 ETH
             const normalized = perfData.map((item: any) => ({
               ...item,
               finalizedAmount: Number((item.finalizedAmount / 1e18).toFixed(4)),
             }));
-
             setCampaignPerformanceData(normalized);
-          } else {
-            console.error("Failed to load campaign performance data.");
           }
-
-
-          
-          
-
-        } catch (err) {
-          console.error("Error fetching created campaigns or fund chart data:", err);
         }
-      }
-      
 
-
-
-      try {
-        const summariesPromises = campaigns.map(async (address) => {
+        const summaries = await Promise.all(campaigns.map(async (address) => {
           try {
             const campaign = await getCampaignContract(address);
-
-            // Get individual properties directly
-            const manager = await campaign.manager();
-            const minimumContribution = await campaign.minimumContribution();
-            const approversCount = await campaign.approversCount();
-
-            // For requestCount, we'll need to check if the property exists
-            let requestCount = 0;
-            if (campaign.requestsCount) {
-              requestCount = Number(await campaign.requestsCount());
-            } else if (campaign.getRequestsCount) {
-              requestCount = Number(await campaign.getRequestsCount());
-            }
-
-            // Get balance from provider
+            const [manager, minContrib, approversCount] = await Promise.all([
+              campaign.manager(),
+              campaign.minimumContribution(),
+              campaign.approversCount()
+            ]);
+            const requestCount = campaign.requestsCount
+              ? Number(await campaign.requestsCount())
+              : campaign.getRequestsCount
+                ? Number(await campaign.getRequestsCount())
+                : 0;
             const provider = getProvider();
             const balance = await provider.getBalance(address);
-
             return {
               address,
               manager,
-              minimumContribution: minimumContribution.toString(),
+              minimumContribution: minContrib.toString(),
               balance: balance.toString(),
               approversCount: Number(approversCount),
-              requestCount,
+              requestCount
             };
-          } catch (error) {
-            console.error(`Error fetching data for campaign ${address}:`, error);
+          } catch {
             return {
               address,
               manager: 'Error loading',
@@ -246,78 +203,42 @@ export default function Dashboard() {
               requestCount: 0
             };
           }
-        });
+        }));
 
-        const results = await Promise.all(summariesPromises);
-        setCampaignSummaries(results);
+        setCampaignSummaries(summaries);
 
-        // If user is admin, calculate platform stats
         if (isAdmin) {
-          const totalContributors = results.reduce((sum, campaign) => sum + campaign.approversCount, 0);
-          const totalFunds = results.reduce((sum, camp) =>
-            sum + (parseFloat(camp.balance) || 0), 0).toString();
-          const totalPendingRequests = results.reduce((sum, camp) => sum + camp.requestCount, 0);
-
-          setTotalStats({
-            contributors: totalContributors,
-            totalFunds: totalFunds,
-            pendingRequests: totalPendingRequests
-          });
-        }
-
-        // For regular users, find campaigns they've contributed to
-        if (!isAdmin) {
-          const userContributions = [];
-          const userRequests = [];
+          const contributors = summaries.reduce((sum, c) => sum + c.approversCount, 0);
+          const totalFunds = summaries.reduce((sum, c) => sum + parseFloat(c.balance), 0).toString();
+          const pending = summaries.reduce((sum, c) => sum + c.requestCount, 0);
+          setTotalStats({ contributors, totalFunds, pendingRequests: pending });
+        } else if (account) {
+          const contributions: CampaignSummary[] = [];
+          const requests: PendingRequest[] = [];
 
           for (const address of campaigns) {
             const campaign = await getCampaignContract(address);
+            if (await campaign.approvers(account)) {
+              const [manager, minContrib, approversCount] = await Promise.all([
+                campaign.manager(),
+                campaign.minimumContribution(),
+                campaign.approversCount()
+              ]);
+              const requestCount = campaign.requestsCount
+                ? Number(await campaign.requestsCount())
+                : campaign.getRequestsCount
+                  ? Number(await campaign.getRequestsCount())
+                  : 0;
+              const provider = getProvider();
+              const balance = await provider.getBalance(address);
+              contributions.push({ address, manager, minimumContribution: minContrib.toString(), balance: balance.toString(), approversCount: Number(approversCount), requestCount });
 
-            try {
-              const isContributor = await campaign.approvers(account);
-
-              if (isContributor) {
-                // Get individual properties directly
-                const manager = await campaign.manager();
-                const minimumContribution = await campaign.minimumContribution();
-                const approversCount = await campaign.approversCount();
-
-                // For requestCount, we'll need to check if the property exists
-                let requestCount = 0;
-                if (campaign.requestsCount) {
-                  requestCount = Number(await campaign.requestsCount());
-                } else if (campaign.getRequestsCount) {
-                  requestCount = Number(await campaign.getRequestsCount());
-                }
-
-                const provider = getProvider();
-                const balance = await provider.getBalance(address);
-
-                userContributions.push({
-                  address,
-                  manager,
-                  minimumContribution: minimumContribution.toString(),
-                  balance: balance.toString(),
-                  approversCount: Number(approversCount),
-                  requestCount
-                });
-
-                // Get requests that need user's vote
-                for (let i = 0; i < requestCount; i++) {
-                  // Check if the contract has requests method
-                  let request;
-                  let hasApproved;
-
-                  try {
-                    request = await campaign.requests(i);
-                    hasApproved = await campaign.approvals(i, account);
-                  } catch (error) {
-                    console.error("Error fetching request details:", error);
-                    continue;
-                  }
-
+              for (let i = 0; i < requestCount; i++) {
+                try {
+                  const request = await campaign.requests(i);
+                  const hasApproved = await campaign.approvals(i, account);
                   if (!request.complete && !hasApproved) {
-                    userRequests.push({
+                    requests.push({
                       campaignAddress: address,
                       requestIndex: i,
                       description: request.description,
@@ -326,40 +247,37 @@ export default function Dashboard() {
                       approvalCount: request.approvalCount.toString()
                     });
                   }
-                }
+                } catch { continue; }
               }
-            } catch (error) {
-              console.error(`Error checking user contributions for ${address}:`, error);
             }
           }
 
-          setUserContributions(userContributions);
-          setPendingRequests(userRequests);
+          setUserContributions(contributions);
+          setPendingRequests(requests);
         }
-      } catch (error) {
-        console.error("Error fetching campaign data:", error);
+      } catch (err) {
+        console.error('Error fetching campaign data:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCampaignData();
-  }, [campaigns, isConnected, account, isAdmin]);
+    fetchData();
+  }, [ campaigns, isConnected, account, isAdmin ] );
 
-  // If wallet is not connected
-  if (!isConnected) {
+
+   if (!isConnected && status !== 'authenticated') {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
           <FaWallet className="text-5xl text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Connect Your Wallet</h1>
-          <p className="text-gray-600 mb-4">Connect your wallet to view your dashboard.</p>
+          <h1 className="text-3xl font-bold mb-2">Connect Wallet or Sign in</h1>
+          <p className="text-gray-600 mb-4">You must connect your wallet or sign in with Google to view the dashboard.</p>
         </div>
       </div>
     );
   }
 
-  // If data is loading
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -370,88 +288,39 @@ export default function Dashboard() {
     );
   }
 
-  // Admin Dashboard (including user functionality)
   if (isAdmin) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <AdminDashboardSection
-          campaignsLength={campaigns.length}
-          totalStats={totalStats}
-          formatEther={formatEther}
-          account={account || ''}
-        />
-
+        <AdminDashboardSection campaignsLength={campaigns.length} totalStats={totalStats} formatEther={formatEther} account={account || ''} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main admin section - Left sidebar */}
-          <div className="lg:col-span-1">
-            <AdminStats
-              campaignsLength={campaigns.length}
-              totalStats={totalStats}
-              formatEther={formatEther}
-            />
-
-            <AdminActions
-              account={account || ''}
-            />
-
-            <UserStats
-              userContributionsLength={userContributions.length}
-              pendingRequestsLength={pendingRequests.length}
-            />
+          <div className="lg:col-span--1">
+            <AdminStats campaignsLength={campaigns.length} totalStats={totalStats} formatEther={formatEther} />
+            <AdminActions account={account || ''} />
+            <UserStats userContributionsLength={userContributions.length} pendingRequestsLength={pendingRequests.length} />
           </div>
-
-          {/* Main content area - Right side */}
           <div className="lg:col-span-2">
-            <CampaignManagement
-              campaignSummaries={campaignSummaries}
-              formatEther={formatEther}
-            />
-
-            <YourInvestments
-              userContributions={userContributions}
-              formatEther={formatEther}
-            />
+            <CampaignManagement campaignSummaries={campaignSummaries} formatEther={formatEther} />
+            <YourInvestments userContributions={userContributions} formatEther={formatEther} />
             <CampaignsICreated createdCampaigns={createdCampaigns} />
             <FundsRaisedChart data={fundsRaisedData} />
             <FinalizationsChart data={finalizationsData} />
             <CampaignPerformanceChart data={campaignPerformanceData} />
-            
-            <PendingVotes
-              pendingRequests={pendingRequests}
-              formatEther={formatEther}
-            />
+            <PendingVotes pendingRequests={pendingRequests} formatEther={formatEther} />
           </div>
         </div>
       </div>
     );
   }
 
-  // User Dashboard
   return (
     <div className="container mx-auto px-4 py-16">
-      <UserDashboardSection
-        userContributionsLength={userContributions.length}
-        pendingRequestsLength={pendingRequests.length}
-        account={account || ''}
-      />
-
-      {/* Campaigns You've Invested In */}
-      <YourInvestments
-        userContributions={userContributions}
-        formatEther={formatEther}
-      />
+      <UserDashboardSection userContributionsLength={userContributions.length} pendingRequestsLength={pendingRequests.length} account={account || ''} />
+      <YourInvestments userContributions={userContributions} formatEther={formatEther} />
       <CampaignsICreated createdCampaigns={createdCampaigns} />
       <FundsRaisedChart data={fundsRaisedData} />
       <FinalizationsChart data={finalizationsData} />
       <CampaignPerformanceChart data={campaignPerformanceData} />
-
-      {/* Pending Requests to Vote On */}
-      <PendingVotes
-        pendingRequests={pendingRequests}
-        formatEther={formatEther}
-      />
-
-      {/* Create Campaign CTA */}
+      <PendingVotes pendingRequests={pendingRequests} formatEther={formatEther} />
       <div className="mt-8 text-center">
         <Link href="/create" className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 inline-flex items-center">
           <FaFileContract className="mr-2" /> Create Your Own Campaign

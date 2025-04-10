@@ -22,10 +22,6 @@ export default function AdminActions({ account }: AdminActionsProps) {
           <FaProjectDiagram className="mr-2" /> View All Projects
         </Link>
         <hr className="my-3" />
-        <h3 className="font-semibold text-gray-700">Your Admin Wallet</h3>
-        <div className="text-sm font-medium truncate bg-gray-50 p-2 rounded-sm">
-          {account}
-        </div>
       </div>
     </div>
   );
