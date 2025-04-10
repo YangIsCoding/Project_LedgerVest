@@ -115,12 +115,14 @@ export default function Dashboard ()
   const [fundsRaisedData, setFundsRaisedData] = useState<ChartData[]>([]);
   const [finalizationsData, setFinalizationsData] = useState<FinalizationData[]>([]);
   const [campaignPerformanceData, setCampaignPerformanceData] = useState<CampaignPerformance[]>([]);
-  const [ totalStats, setTotalStats ] = useState( { contributors: 0, totalFunds: '0', pendingRequests: 0 } );
+  const [ totalStats, setTotalStats ] = useState( { contributors: 0, totalFunds: '0', pendingRequests: 0, finalizedFunds: '0' } );
   
   
 
 
-  useEffect(() => {
+  useEffect( () =>
+  {
+    console.log('fetchData called');
     const fetchData = async () => {
       if (!isConnected || campaigns.length === 0) return setIsLoading(false);
 
@@ -149,16 +151,31 @@ export default function Dashboard ()
 
           if (finalRes.ok) {
             const finals = await finalRes.json();
+            console.log('Finalizations:', finals);
             const finalDaily: Record<string, number> = {};
             finals.forEach((f: { amount: number; timestamp: string }) => {
               const date = new Date(f.timestamp).toLocaleDateString();
               finalDaily[date] = (finalDaily[date] || 0) + f.amount;
-            });
+            } );
+            
             let cumulative = 0;
             const finalChart: FinalizationData[] = Object.entries(finalDaily)
               .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
               .map(([date, amount]) => ({ date, amount: Number((cumulative += amount).toFixed(4)) }));
-            setFinalizationsData(finalChart);
+            setFinalizationsData( finalChart );
+
+            const totalFinalizedFunds = finals.reduce(
+              (sum: number, f: { amount: string }) => sum + parseFloat(f.amount),
+              0
+            );
+            setTotalStats((prevStats) => {
+              const updatedStats = {
+                ...prevStats,
+                finalizedFunds: totalFinalizedFunds.toString(),
+              };
+              console.log('Updated Total Stats:', updatedStats);
+              return updatedStats;
+            });
           }
 
           if (perfRes.ok) {
@@ -212,7 +229,19 @@ export default function Dashboard ()
           const contributors = summaries.reduce((sum, c) => sum + c.approversCount, 0);
           const totalFunds = summaries.reduce((sum, c) => sum + parseFloat(c.balance), 0).toString();
           const pending = summaries.reduce((sum, c) => sum + c.requestCount, 0);
-          setTotalStats({ contributors, totalFunds, pendingRequests: pending });
+          setTotalStats((prevStats) => ({
+            ...prevStats,
+            contributors,
+            totalFunds,
+            pendingRequests: pending,
+            finalizedFunds: prevStats.finalizedFunds, // 保留 finalizedFunds 的值
+          } ) );
+          
+          // 確保 admin 也更新 userContributions
+          const contributions: CampaignSummary[] = summaries.filter((summary) =>
+            campaigns.includes(summary.address)
+          );
+          setUserContributions(contributions);
         } else if (account) {
           const contributions: CampaignSummary[] = [];
           const requests: PendingRequest[] = [];
@@ -295,7 +324,16 @@ export default function Dashboard ()
         <AdminDashboardSection campaignsLength={campaigns.length} totalStats={totalStats} formatEther={formatEther} account={account || ''} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span--1">
-            <AdminStats campaignsLength={campaigns.length} totalStats={totalStats} formatEther={formatEther} />
+            <AdminStats
+              campaignsLength={campaigns.length}
+              totalStats={{
+                contributors: totalStats.contributors,
+                totalFunds: totalStats.totalFunds,
+                pendingRequests: totalStats.pendingRequests,
+                finalizedFunds: totalStats.finalizedFunds || '0',
+              }}
+              formatEther={(wei, decimals) => formatEther(typeof wei === 'number' ? BigInt(wei).toString() : wei, decimals)} // 確保類型正確
+            />
             <AdminActions account={account || ''} />
             <UserStats userContributionsLength={userContributions.length} pendingRequestsLength={pendingRequests.length} />
           </div>
