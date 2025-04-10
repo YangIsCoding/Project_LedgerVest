@@ -26,8 +26,7 @@ import CampaignPerformanceChart from '@/components/dashboard/CampaignPerformance
 // Constants
 const ADMIN_WALLETS: string[] = [
   '0xc3DbC713d5dd66CD2f529c6162Cf06dc9fe18b01',
-  '0xb7695977d25D95d23b45BD6f9ACB74A5d332D28d',
-  '0xaada21fD544dA24B3b96E465C4c7074f4D6E8632'
+  '0xb7695977d25D95d23b45BD6f9ACB74A5d332D28d'
 ];
 
 const ADMIN_EMAILS: string[] = [
@@ -116,7 +115,9 @@ export default function Dashboard ()
   const [fundsRaisedData, setFundsRaisedData] = useState<ChartData[]>([]);
   const [finalizationsData, setFinalizationsData] = useState<FinalizationData[]>([]);
   const [campaignPerformanceData, setCampaignPerformanceData] = useState<CampaignPerformance[]>([]);
-  const [totalStats, setTotalStats] = useState({ contributors: 0, totalFunds: '0', pendingRequests: 0 });
+  const [ totalStats, setTotalStats ] = useState( { contributors: 0, totalFunds: '0', pendingRequests: 0 } );
+  
+  
 
 
   useEffect(() => {
@@ -265,18 +266,18 @@ export default function Dashboard ()
     fetchData();
   }, [ campaigns, isConnected, account, isAdmin ] );
 
-
-   if (!isConnected && status !== 'authenticated') {
+  if (status !== 'authenticated') {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
           <FaWallet className="text-5xl text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Connect Wallet or Sign in</h1>
-          <p className="text-gray-600 mb-4">You must connect your wallet or sign in with Google to view the dashboard.</p>
+          <h1 className="text-3xl font-bold mb-2">Sign in Required</h1>
+          <p className="text-gray-600 mb-4">You must sign in with Google to access the dashboard.</p>
         </div>
       </div>
     );
   }
+
 
   if (isLoading) {
     return (
