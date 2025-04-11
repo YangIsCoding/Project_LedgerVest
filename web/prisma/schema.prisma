@@ -13,6 +13,7 @@ model User {
     userType      UserType @default(normal)
     createdAt     DateTime @default(now())
     lastLogin     DateTime @updatedAt
+    contactInfo   String
 
     // User relationships
     createdCampaigns Campaign[]     @relation("CampaignCreator")
@@ -139,4 +140,12 @@ model Finalization {
     amount    Float
     gasCost   Float?
     timestamp DateTime @default(now())
+}
+
+model ContactMessage {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  message     String
+  createdAt   DateTime @default(now())
 }

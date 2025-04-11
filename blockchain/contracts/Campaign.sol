@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 contract CampaignFactory{
     address[] public deployedCampaigns;
     address constant FEE_RECIPIENT = 0xaada21fD544dA24B3b96E465C4c7074f4D6E8632;
+    event CampaignCreated(address campaignAddress, address creator);
 
     function createCampaign(uint minimum) public payable {
         uint fee = (msg.value * 2) / 100;
@@ -13,6 +14,7 @@ contract CampaignFactory{
 
         address newCampaign = address(new Campaign(minimum, msg.sender));
         deployedCampaigns.push(newCampaign);
+        emit CampaignCreated(newCampaign, msg.sender);
     }
     
     function getDeployedCampaigns()public view returns(address[] memory){
@@ -47,7 +49,10 @@ contract Campaign {
         _;
     }
 
-   
+    function hasApproved(uint index, address approver) public view returns (bool) {
+        Request storage request = requests[index];
+        return request.approvals[approver];
+    }
 
 
     function setApprovalThreshold(uint newThreshold) public restricted {

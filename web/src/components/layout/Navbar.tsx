@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useWallet } from '@/lib/context/WalletContext';
 import WalletButton from '../ui/WalletButton';
 import { FaLink, FaBars, FaTimes, FaUserCircle } from 'react-icons/fa';
+import LoginButton from '../LoginButton';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,6 +18,8 @@ export default function Navbar() {
     { name: 'Projects', href: '/projects' },
     { name: 'How It Works', href: '/how-it-works' },
     { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'dashboard', href: '/dashboard' }
   ];
 
   return (
@@ -68,6 +71,7 @@ export default function Navbar() {
 
             {/* Wallet Button */}
             <WalletButton />
+            <LoginButton />
           </div>
 
           {/* Mobile menu button */}

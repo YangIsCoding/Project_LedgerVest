@@ -20,6 +20,7 @@ export default function AdminDashboardSection({
 }: AdminDashboardSectionProps) {
   return (
     <div className="container mx-auto px-4 py-16">
+      <h1 className="text-2xl font-bold text-blue-600">Admin Dashboard</h1>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 flex items-center">
           <FaUserShield className="mr-2 text-blue-600" /> Admin Dashboard

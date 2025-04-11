@@ -9,6 +9,8 @@ interface CampaignSummary {
   balance: string;
   approversCount: number;
   isLoading: boolean;
+  title?: string;
+  createdAt?: string;
 }
 
 interface CampaignGridProps {
@@ -22,12 +24,15 @@ export default function CampaignGrid({ campaignSummaries, formatEther }: Campaig
       {campaignSummaries.map((campaign) => (
         <div key={campaign.address} className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="border-b p-4">
-            <h3 className="text-xl font-semibold mb-1 break-all">
+            <h3 className="text-xl font-semibold mb-1 break-words">
               <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
-                Campaign @ {campaign.address.substring(0, 10)}...
+                {campaign.title ? campaign.title : `Campaign @ ${campaign.address.substring(0, 10)}...`}
               </Link>
             </h3>
             <p className="text-sm text-gray-500">Manager: {campaign.manager.substring(0, 10)}...</p>
+            {campaign.createdAt && (
+              <p className="text-xs text-gray-400">Created at: {campaign.createdAt}</p>
+            )}
           </div>
 
           <div className="p-4 bg-gray-50">

@@ -79,6 +79,7 @@ export async function getCampaignContractWithSigner(address) {
  */
 export function formatEther(wei, decimals = 4) {
   try {
+    if (!wei || wei === '0') return '0';
     // Use ethers.formatEther which now returns a string in v6
     const ethValue = ethers.formatEther(wei);
     return parseFloat(ethValue).toFixed(decimals);

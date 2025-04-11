@@ -6,25 +6,27 @@ import Link from 'next/link';
 import { useWallet } from '@/lib/context/WalletContext';
 import { getFactoryContractWithSigner } from '@/utils/ethers';
 import { FaArrowLeft, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
-import { ethers } from 'ethers';
+import { ethers, Interface } from 'ethers';
 import CreateCampaignForm from '@/components/create/CreateCampaignForm';
 
 export default function CreateCampaignPage() {
   const router = useRouter();
-  const { isConnected } = useWallet();
+  const { isConnected, account: walletAddress } = useWallet();
 
-  // Form state
   const [minimumContribution, setMinimumContribution] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [targetAmount, setTargetAmount] = useState('');
+  const [contactInfo, setContactInfo] = useState('');
 
-  // UI state
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
 
   async function handleCreateCampaign(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!minimumContribution) {
-      setMessage({ text: 'Please enter a minimum contribution amount', type: 'error' });
+    if (!minimumContribution || !title || !targetAmount || !contactInfo) {
+      setMessage({ text: 'Please fill in all required fields', type: 'error' });
       return;
     }
 
@@ -32,32 +34,69 @@ export default function CreateCampaignPage() {
       setIsCreating(true);
       setMessage({ text: '', type: '' });
 
-      // Convert ETH to wei
       const minimumInWei = ethers.parseEther(minimumContribution);
-
-      // Get factory contract with signer
       const factoryWithSigner = await getFactoryContractWithSigner();
 
-      // Create campaign transaction
       setMessage({ text: 'Creating campaign...', type: 'info' });
       const tx = await factoryWithSigner.createCampaign(minimumInWei, {
-      value: ethers.parseEther("0.02"), // 傳遞至少 2% 的費用
-    });
+        value: ethers.parseEther("0.02"),
+      });
 
-      // Wait for transaction to complete
-      setMessage({ text: 'Transaction submitted. Waiting for confirmation...', type: 'info' });
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      // Success! Show message and redirect
+      const factoryInterface = new Interface([
+        'event CampaignCreated(address campaignAddress, address creator)'
+      ]);
+
+      let campaignAddress = '';
+
+      for (const log of receipt.logs) {
+        try {
+          const parsed = factoryInterface.parseLog(log) as ethers.LogDescription;
+          if (parsed.name === 'CampaignCreated') {
+            campaignAddress = parsed.args.campaignAddress;
+            break;
+          }
+        } catch {
+          // Skip non-matching logs
+        }
+      }
+
+      if (!campaignAddress) {
+        throw new Error('❌ Failed to extract campaign address from logs');
+      }
+
+      const gasCost = tx.gasPrice && receipt.gasUsed
+        ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
+        : '0';
+
+      await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          minimumContribution,
+          targetAmount,
+          walletAddress,
+          contractAddress: campaignAddress,
+          gasCost,
+          commission: '0.01',
+          contactInfo,
+        })
+      });
+
       setMessage({
         text: 'Campaign created successfully! Redirecting to home page...',
         type: 'success'
       });
 
-      // Clear form
       setMinimumContribution('');
+      setTitle('');
+      setDescription('');
+      setTargetAmount('');
+      setContactInfo('');
 
-      // Redirect after a short delay
       setTimeout(() => {
         router.push('/');
       }, 2000);
@@ -91,19 +130,28 @@ export default function CreateCampaignPage() {
       </Link>
 
       {message.text && (
-        <div className={`mb-6 p-4 rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-700' :
+        <div className={`mb-6 p-4 rounded-lg ${
+          message.type === 'error' ? 'bg-red-100 text-red-700' :
           message.type === 'success' ? 'bg-green-100 text-green-700' :
-            'bg-blue-100 text-blue-700'
-          }`}>
-          {message.type === 'error' ? <FaExclamationTriangle className="inline mr-2" /> :
-            message.type === 'success' ? <FaCheckCircle className="inline mr-2" /> : null}
+          'bg-blue-100 text-blue-700'
+        }`}>
+          {message.type === 'error' && <FaExclamationTriangle className="inline mr-2" />}
+          {message.type === 'success' && <FaCheckCircle className="inline mr-2" />}
           {message.text}
         </div>
       )}
 
       <CreateCampaignForm
+        title={title}
+        setTitle={setTitle}
+        description={description}
+        setDescription={setDescription}
         minimumContribution={minimumContribution}
         setMinimumContribution={setMinimumContribution}
+        targetAmount={targetAmount}
+        setTargetAmount={setTargetAmount}
+        contactInfo={contactInfo}
+        setContactInfo={setContactInfo}
         handleCreateCampaign={handleCreateCampaign}
         isCreating={isCreating}
       />
