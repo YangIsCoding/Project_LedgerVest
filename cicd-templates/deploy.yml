@@ -18,7 +18,7 @@ deploy-prod:
       NEXTAUTH_URL=${NEXTAUTH_URL}
       EOF
     - echo "📤 Uploading Docker image..."
-    - scp app.tar .env $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
+    - scp docker-compose.yml app.tar .env $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
     - ssh $DEPLOY_USER@$DEPLOY_HOST '
         cd ~/fintech512-project_ledgervest &&
         sudo docker load -i app.tar &&
