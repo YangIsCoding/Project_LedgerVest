@@ -8,8 +8,17 @@ deploy-prod:
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
+    - echo "📄 Generating .env file..."
+    - |
+      cat <<EOF > .env
+      DATABASE_URL=${DATABASE_URL}
+      GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      NEXTAUTH_URL=${NEXTAUTH_URL}
+      EOF
     - echo "📤 Uploading Docker image..."
-    - scp app.tar $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
+    - scp docker-compose.yml app.tar .env $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
     - ssh $DEPLOY_USER@$DEPLOY_HOST '
         cd ~/fintech512-project_ledgervest &&
         sudo docker load -i app.tar &&
