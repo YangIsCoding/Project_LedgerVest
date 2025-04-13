@@ -12,6 +12,7 @@ import {
 import { ethers } from 'ethers';
 import { useAccount, useChainId } from 'wagmi';
 import CampaignFactory from '@/utils/abis/CampaignFactory.json';
+import { setCookie } from 'nookies';
 
 interface WalletContextType {
 	isConnected: boolean;
@@ -39,7 +40,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 	const [error, setError] = useState<string | null>(null);
 	const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
 
-	// Memoize provider so it doesn't get recreated on every render
 	const provider = useMemo(() => {
 		if (typeof window !== 'undefined' && window.ethereum) {
 			return new ethers.BrowserProvider(window.ethereum);
@@ -47,14 +47,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 		return null;
 	}, []);
 
-	// Load campaigns from factory contract
 	const loadCampaigns = useCallback(async () => {
 		if (!provider) {
 			setError('No provider available');
 			return;
 		}
 		try {
-			// Load factory address from config (assumes you have a contract-address.json)
 			const { CampaignFactory: factoryAddr } = await import(
 				'@/utils/abis/contract-address.json'
 			);
@@ -68,7 +66,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 		}
 	}, [provider]);
 
-	// Map chainId to network name
 	const getNetworkName = useCallback((chainId: number): string => {
 		const networks: Record<number, string> = {
 			1: 'Ethereum Mainnet',
@@ -77,10 +74,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 		return networks[chainId] || `Chain ID: ${chainId}`;
 	}, []);
 
-	// Update signer and Fetch account balance when provider and address are available
 	useEffect(() => {
 		if (provider && address) {
-			// Update signer
 			provider
 				.getSigner()
 				.then((s) => setSigner(s))
@@ -98,12 +93,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 					console.error('Error fetching balance:', err);
 					setBalance(null);
 				});
-		} else {
+		}
+		else {
 			setSigner(null);
 			setBalance(null);
 		}
 	}, [provider, address]);
-
 
 	useEffect(() => {
 		if (isConnected && chainId) {
@@ -113,8 +108,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 		}
 	}, [isConnected, chainId, getNetworkName]);
 
+	useEffect(() => {
+		if (isConnected && address) {
+			setCookie(null, 'walletAddress', address, {
+				maxAge: 60 * 60 * 24 * 7,
+				path: '/',
+			});
+			console.log('[WalletProvider] cookie set:', address);
+		}
+	}, [isConnected, address]);
 
-	// Reload campaigns when wallet connects
 	useEffect(() => {
 		if (isConnected) {
 			loadCampaigns();

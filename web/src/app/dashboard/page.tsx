@@ -21,21 +21,15 @@ import YourInvestments from '@/components/dashboard/YourInvestments';
 import PendingVotes from '@/components/dashboard/PendingVotes';
 import FinalizationsChart from '@/components/dashboard/FinalizationsChart';
 import CampaignPerformanceChart from '@/components/dashboard/CampaignPerformanceChart';
+import UserManagementPanel from '@/components/dashboard/UserManagementPanel';
+
 
 
 // Constants
-const ADMIN_WALLETS: string[] = [
-  '0xc3DbC713d5dd66CD2f529c6162Cf06dc9fe18b01',
-  '0xb7695977d25D95d23b45BD6f9ACB74A5d332D28d'
-];
 
-const ADMIN_EMAILS: string[] = [
-  'chrisliu504638@gmail.com',
-  'Junjieja.li2@gmail.com',
-  'freddyplati@gmail.com',
-  'howdywu@gmail.com',
-  'allanustw@gmail.com'
-];
+
+
+
 
 // Types
 interface CampaignSummary {
@@ -83,15 +77,33 @@ interface CampaignPerformance {
 
 export default function Dashboard ()
 {
+  const [adminEmails, setAdminEmails] = useState<string[]>([]);
+  const [adminWallets, setAdminWallets] = useState<string[]>([]);
   const { data: session, status } = useSession();
   const { isConnected, account, campaigns, loadCampaigns } = useWallet();
   // 從 session 拿到 email
   const userEmail = session?.user?.email;
 
   // 判斷是不是 admin
-  const isEmailAdmin = ADMIN_EMAILS.includes(userEmail || '');
-  const isWalletAdmin = ADMIN_WALLETS.includes(account || '');
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isEmailAdmin = adminEmails.includes(userEmail || '');
+  const isWalletAdmin = adminWallets.includes(account || '');
+  const [ isAdmin, setIsAdmin ] = useState( false );
+  
+  useEffect(() => {
+  const fetchAdmins = async () => {
+    try {
+      const res = await fetch('/api/admin');
+      if (res.ok) {
+        const data = await res.json();
+        setAdminEmails(data.filter((a: any) => a.email).map((a: any) => a.email));
+        setAdminWallets(data.filter((a: any) => a.walletAddress).map((a: any) => a.wallet));
+      }
+    } catch (err) {
+      console.error('Failed to load admin list', err);
+    }
+  };
+  fetchAdmins();
+}, []);
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -347,6 +359,7 @@ export default function Dashboard ()
             <PendingVotes pendingRequests={pendingRequests} formatEther={formatEther} />
           </div>
         </div>
+         <UserManagementPanel />
       </div>
     );
   }

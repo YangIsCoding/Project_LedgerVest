@@ -1,5 +1,6 @@
 generator client {
     provider = "prisma-client-js"
+    output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -22,6 +23,7 @@ model User {
     // optional part
     votes        Vote[] // better see “one vote per user per request”
     finalization Finalization[] // Direct access to finalization for faster query
+    isBlocked    Boolean  @default(false)
 }
 
 enum UserType {
@@ -148,4 +150,11 @@ model ContactMessage {
   email       String
   message     String
   createdAt   DateTime @default(now())
+}
+
+model Admin {
+  id             String   @id @default(uuid())
+  email          String?  @unique
+  walletAddress  String?  @unique
+  createdAt      DateTime @default(now())
 }
