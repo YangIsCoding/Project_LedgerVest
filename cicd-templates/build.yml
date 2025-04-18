@@ -9,8 +9,7 @@ build-app:
     - docker info
   script:
     - echo "🐳 Building Docker Compose stack..."
-    - echo "DATABASE_URL=${DATABASE_URL}" > build.env
-    - docker compose --env-file build.env -f docker-compose.yml build
+    - docker compose --env-file .env -f docker-compose.yml build
     - docker image ls
     - docker save fintech512-project_ledgervest-web -o app.tar
   artifacts:

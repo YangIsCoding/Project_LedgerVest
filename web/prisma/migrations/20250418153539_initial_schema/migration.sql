@@ -7,11 +7,16 @@ CREATE TYPE "CampaignStatus" AS ENUM ('funding', 'completed', 'failed');
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "walletAddress" TEXT NOT NULL,
+    "username" TEXT,
+    "email" TEXT,
+    "password" TEXT,
+    "authMethod" TEXT,
+    "walletAddress" TEXT,
     "userType" "UserType" NOT NULL DEFAULT 'normal',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastLogin" TIMESTAMP(3) NOT NULL,
     "contactInfo" TEXT NOT NULL,
+    "isBlocked" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -105,6 +110,22 @@ CREATE TABLE "ContactMessage" (
     CONSTRAINT "ContactMessage_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Admin" (
+    "id" TEXT NOT NULL,
+    "email" TEXT,
+    "walletAddress" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_walletAddress_key" ON "User"("walletAddress");
 
@@ -132,6 +153,12 @@ CREATE UNIQUE INDEX "Finalization_txHash_key" ON "Finalization"("txHash");
 -- CreateIndex
 CREATE UNIQUE INDEX "Finalization_requestId_key" ON "Finalization"("requestId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_walletAddress_key" ON "Admin"("walletAddress");
+
 -- AddForeignKey
 ALTER TABLE "Campaign" ADD CONSTRAINT "Campaign_creatorAddress_fkey" FOREIGN KEY ("creatorAddress") REFERENCES "User"("walletAddress") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -158,4 +185,3 @@ ALTER TABLE "Finalization" ADD CONSTRAINT "Finalization_fundSeekerAddr_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "Finalization" ADD CONSTRAINT "Finalization_campaignAddr_fkey" FOREIGN KEY ("campaignAddr") REFERENCES "Campaign"("contractAddress") ON DELETE RESTRICT ON UPDATE CASCADE;
-

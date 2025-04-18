@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/lib/context/WalletContext';
 import { getCampaignContract, formatEther, getProvider } from '@/utils/ethers';
-import { FaWallet, FaFileContract } from 'react-icons/fa';
+import { FaFileContract,FaSignInAlt } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
 
 
@@ -75,8 +75,7 @@ interface CampaignPerformance {
   finalizedAmount: number;
 }
 
-export default function Dashboard ()
-{
+export default function Dashboard() {
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
   const [adminWallets, setAdminWallets] = useState<string[]>([]);
   const { data: session, status } = useSession();
@@ -87,24 +86,24 @@ export default function Dashboard ()
   // 判斷是不是 admin
   const isEmailAdmin = adminEmails.includes(userEmail || '');
   const isWalletAdmin = adminWallets.includes(account || '');
-  const [ isAdmin, setIsAdmin ] = useState( false );
-  
+  const [isAdmin, setIsAdmin] = useState(false);
+
   useEffect(() => {
-  const fetchAdmins = async () => {
-    try {
-      const res = await fetch('/api/admin');
-      if (res.ok) {
-        const data = await res.json();
-        setAdminEmails(data.filter((a: any) => a.email).map((a: any) => a.email));
-        setAdminWallets(data.filter((a: any) => a.walletAddress).map((a: any) => a.wallet));
+    const fetchAdmins = async () => {
+      try {
+        const res = await fetch('/api/admin');
+        if (res.ok) {
+          const data = await res.json();
+          setAdminEmails(data.filter((a: any) => a.email).map((a: any) => a.email));
+          setAdminWallets(data.filter((a: any) => a.walletAddress).map((a: any) => a.wallet));
+        }
+      } catch (err) {
+        console.error('Failed to load admin list', err);
       }
-    } catch (err) {
-      console.error('Failed to load admin list', err);
-    }
-  };
-  fetchAdmins();
-}, []);
-  
+    };
+    fetchAdmins();
+  }, []);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       console.log('Updating isAdmin:', { isWalletAdmin, isEmailAdmin });
@@ -127,13 +126,12 @@ export default function Dashboard ()
   const [fundsRaisedData, setFundsRaisedData] = useState<ChartData[]>([]);
   const [finalizationsData, setFinalizationsData] = useState<FinalizationData[]>([]);
   const [campaignPerformanceData, setCampaignPerformanceData] = useState<CampaignPerformance[]>([]);
-  const [ totalStats, setTotalStats ] = useState( { contributors: 0, totalFunds: '0', pendingRequests: 0, finalizedFunds: '0' } );
-  
-  
+  const [totalStats, setTotalStats] = useState({ contributors: 0, totalFunds: '0', pendingRequests: 0, finalizedFunds: '0' });
 
 
-  useEffect( () =>
-  {
+
+
+  useEffect(() => {
     console.log('fetchData called');
     const fetchData = async () => {
       if (!isConnected || campaigns.length === 0) return setIsLoading(false);
@@ -168,13 +166,13 @@ export default function Dashboard ()
             finals.forEach((f: { amount: number; timestamp: string }) => {
               const date = new Date(f.timestamp).toLocaleDateString();
               finalDaily[date] = (finalDaily[date] || 0) + f.amount;
-            } );
-            
+            });
+
             let cumulative = 0;
             const finalChart: FinalizationData[] = Object.entries(finalDaily)
               .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
               .map(([date, amount]) => ({ date, amount: Number((cumulative += amount).toFixed(4)) }));
-            setFinalizationsData( finalChart );
+            setFinalizationsData(finalChart);
 
             const totalFinalizedFunds = finals.reduce(
               (sum: number, f: { amount: string }) => sum + parseFloat(f.amount),
@@ -247,8 +245,8 @@ export default function Dashboard ()
             totalFunds,
             pendingRequests: pending,
             finalizedFunds: prevStats.finalizedFunds, // 保留 finalizedFunds 的值
-          } ) );
-          
+          }));
+
           // 確保 admin 也更新 userContributions
           const contributions: CampaignSummary[] = summaries.filter((summary) =>
             campaigns.includes(summary.address)
@@ -305,15 +303,15 @@ export default function Dashboard ()
     };
 
     fetchData();
-  }, [ campaigns, isConnected, account, isAdmin ] );
+  }, [campaigns, isConnected, account, isAdmin]);
 
   if (status !== 'authenticated') {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
-          <FaWallet className="text-5xl text-gray-400 mx-auto mb-4" />
+          <FaSignInAlt className="text-5xl text-gray-400 mx-auto mb-4" />
           <h1 className="text-3xl font-bold mb-2">Sign in Required</h1>
-          <p className="text-gray-600 mb-4">You must sign in with Google to access the dashboard.</p>
+          <p className="text-gray-600 mb-4">You must sign in to access the dashboard.</p>
         </div>
       </div>
     );
@@ -359,7 +357,7 @@ export default function Dashboard ()
             <PendingVotes pendingRequests={pendingRequests} formatEther={formatEther} />
           </div>
         </div>
-         <UserManagementPanel />
+        <UserManagementPanel />
       </div>
     );
   }
