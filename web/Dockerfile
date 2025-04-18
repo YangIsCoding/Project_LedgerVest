@@ -14,6 +14,7 @@ WORKDIR /app/web
 
 # Prisma and build
 RUN npx prisma generate
+RUN npm run seed:admins
 RUN npm run build
 
 EXPOSE 3000

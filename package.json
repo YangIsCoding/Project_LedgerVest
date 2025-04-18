@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "cd web && next dev",
     "build": "cd web && next build",
-    "start": "cd web && next start"
+    "start": "cd web && next start",
+    "seed:admins": "cd web && ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-admins.ts"
   },
   "author": "",
   "license": "ISC",
