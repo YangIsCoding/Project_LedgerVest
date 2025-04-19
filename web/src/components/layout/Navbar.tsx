@@ -1,87 +1,81 @@
+// filepath: /home/halcyon/root/fintech512-project_ledgervest/web/src/components/layout/Navbar.tsx
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useWallet } from '@/lib/context/WalletContext';
-import WalletButton from '../ui/WalletButton';
+// Remove WalletContext if no longer needed elsewhere
+// import { useWallet } from '@/lib/context/WalletContext'; 
+// Remove WalletButton import
+// import WalletButton from '../ui/WalletButton'; 
 import { FaLink, FaBars, FaTimes, FaUserCircle } from 'react-icons/fa';
-import LoginButton from '../LoginButton';
+// Remove LoginButton import
+// import LoginButton from '../LoginButton'; 
+import UserWalletButton from '../ui/WalletButton'; // Import the new button
+
+// ... (rest of the Navbar component remains the same until the button section)
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { isConnected } = useWallet();
-  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Remove useWallet if not used
+  // const { walletAddress, connectWallet, disconnectWallet } = useWallet(); 
+
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Projects', href: '/projects' },
     { name: 'How It Works', href: '/how-it-works' },
+    { name: 'Create', href: '/create' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
-    { name: 'dashboard', href: '/dashboard' }
+    { name: 'Dashboard', href: '/dashboard' },
   ];
 
   return (
-    <nav className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <FaLink className="mr-2 text-xl" />
-            <span className="font-bold text-xl">LedgerVest</span>
-          </Link>
+    <nav className="bg-gray-900 text-white shadow-md">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and Branding */}
+          <div className="flex-shrink-0">
+            <Link href="/" className="flex items-center space-x-2">
+              <FaLink className="h-8 w-8 text-blue-400" />
+              <span className="font-bold text-xl">LedgerVest</span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             <ul className="flex space-x-4 mr-4">
               {navLinks.map((link) => (
                 <li key={link.name} className="flex items-center">
-                  <Link 
+                  <Link
                     href={link.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
-                      pathname === link.href 
-                        ? 'bg-gray-800 text-white' 
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${pathname === link.href
+                        ? 'bg-gray-800 text-white'
                         : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </Link>
                 </li>
               ))}
-              
-              {/* Only show dashboard link if wallet is connected */}
-              {isConnected && (
-                <li className="flex items-center">
-                  <Link 
-                    href="/dashboard"
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
-                      pathname === '/dashboard' 
-                        ? 'bg-gray-800 text-white' 
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }`}
-                  >
-                    <span className="flex items-center">
-                      <FaUserCircle className="mr-1" /> Dashboard
-                    </span>
-                  </Link>
-                </li>
-              )}
             </ul>
 
-            {/* Wallet Button */}
-            <WalletButton />
-            <LoginButton />
+            {/* Replace WalletButton and LoginButton with UserWalletButton */}
+            <UserWalletButton />
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center">
+            {/* Also add UserWalletButton for mobile if needed, or keep separate */}
+            <div className="mr-2"> <UserWalletButton /> </div>
             <button
               type="button"
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+              <span className="sr-only">Open main menu</span>
+              {isMenuOpen ? <FaTimes className="h-6 w-6" /> : <FaBars className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -89,44 +83,22 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-gray-800">
+        <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  pathname === link.href
-                    ? 'bg-gray-900 text-white'
+                className={`block px-3 py-2 rounded-md text-base font-medium ${pathname === link.href
+                    ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`}
-                onClick={() => setIsMenuOpen(false)}
+                  }`}
+                onClick={() => setIsMenuOpen(false)} // Close menu on link click
               >
                 {link.name}
               </Link>
             ))}
-            
-            {/* Only show dashboard link if wallet is connected */}
-            {isConnected && (
-              <div className="block">
-                <Link
-                  href="/dashboard"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    pathname === '/dashboard'
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span className="flex items-center">
-                    <FaUserCircle className="mr-2" /> Dashboard
-                  </span>
-                </Link>
-              </div>
-            )}
-          </div>
-          <div className="px-4 py-3 border-t border-gray-700">
-            <WalletButton />
+            {/* Optionally add UserWalletButton actions here for mobile if not placed above */}
           </div>
         </div>
       )}

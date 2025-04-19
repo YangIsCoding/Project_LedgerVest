@@ -14,8 +14,9 @@ WORKDIR /app/web
 
 # Prisma and build
 RUN npx prisma generate
-RUN npm run seed:admins
+RUN npx tsc --outDir dist-scripts --module CommonJS --esModuleInterop --skipLibCheck scripts/seed-admins
 RUN npm run build
+RUN npm prune --omit=dev
 
 EXPOSE 3000
 
