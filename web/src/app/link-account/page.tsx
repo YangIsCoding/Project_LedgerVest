@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function LinkAccountPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const prefillEmail = searchParams.get("email") || "";
+  const prefillEmail = searchParams?.get("email") || "";
 
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");

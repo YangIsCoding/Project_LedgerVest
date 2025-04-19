@@ -28,6 +28,7 @@ export default function Navbar() {
     { name: 'Create', href: '/create' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
+    { name: 'Dashboard', href: '/dashboard' },
   ];
 
   return (
@@ -47,13 +48,12 @@ export default function Navbar() {
             <ul className="flex space-x-4 mr-4">
               {navLinks.map((link) => (
                 <li key={link.name} className="flex items-center">
-                  <Link 
+                  <Link
                     href={link.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
-                      pathname === link.href 
-                        ? 'bg-gray-800 text-white' 
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${pathname === link.href
+                        ? 'bg-gray-800 text-white'
                         : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </Link>
@@ -62,13 +62,13 @@ export default function Navbar() {
             </ul>
 
             {/* Replace WalletButton and LoginButton with UserWalletButton */}
-            <UserWalletButton /> 
+            <UserWalletButton />
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-             {/* Also add UserWalletButton for mobile if needed, or keep separate */}
-             <div className="mr-2"> <UserWalletButton /> </div>
+            {/* Also add UserWalletButton for mobile if needed, or keep separate */}
+            <div className="mr-2"> <UserWalletButton /> </div>
             <button
               type="button"
               className="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -89,17 +89,16 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  pathname === link.href
+                className={`block px-3 py-2 rounded-md text-base font-medium ${pathname === link.href
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`}
+                  }`}
                 onClick={() => setIsMenuOpen(false)} // Close menu on link click
               >
                 {link.name}
               </Link>
             ))}
-             {/* Optionally add UserWalletButton actions here for mobile if not placed above */}
+            {/* Optionally add UserWalletButton actions here for mobile if not placed above */}
           </div>
         </div>
       )}

@@ -9,7 +9,7 @@ build-app:
     - docker info
   script:
     - echo "🐳 Building Docker Compose stack..."
-    - docker compose --env-file .env -f docker-compose.yml build
+    - COMPOSE_BAKE=true docker compose --env-file .env -f docker-compose.yml build 
     - docker image ls
     - docker save fintech512-project_ledgervest-web -o app.tar
   artifacts:
