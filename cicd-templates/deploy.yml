@@ -2,7 +2,7 @@ deploy-prod:
   stage: deploy
   image: alpine:latest
   before_script:
-    - apk add --no-cache openssh rsync docker-cli
+    - apk add --no-cache openssh rsync docker-cli gzip
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
@@ -17,8 +17,13 @@ deploy-prod:
       NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       NEXTAUTH_URL=${NEXTAUTH_URL}
       EOF
+    
+    - echo "⚠️ clearing old Docker images..."
+    - ssh $DEPLOY_USER@$DEPLOY_HOST 'sudo docker image prune -a -f --filter "until=24h"'
+
     - echo "📤 Uploading Docker image..."
     - scp docker-compose.yml app.tar .env $DEPLOY_USER@$DEPLOY_HOST:~/fintech512-project_ledgervest/
+    
     - ssh $DEPLOY_USER@$DEPLOY_HOST '
         cd ~/fintech512-project_ledgervest &&
         sudo docker load -i app.tar &&
