@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FaLink, FaBars, FaTimes } from 'react-icons/fa';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import dynamic from 'next/dynamic';
+
+const ConnectButton = dynamic(
+  () => import('@rainbow-me/rainbowkit').then((mod) => mod.ConnectButton),
+  { ssr: false }
+);
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -95,7 +100,7 @@ export default function Navbar() {
           {/* Mobile Wallet Button */}
           {isMounted && (
             <div className="mt-4 px-3">
-              {isMounted && <ConnectButton />}
+              { <ConnectButton />}
             </div>
           )}
         </div>
