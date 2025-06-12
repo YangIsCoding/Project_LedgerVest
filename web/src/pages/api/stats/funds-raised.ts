@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getProvider } from '@/utils/ethers';
 import campaignMeta from '@/app/data/campaignMeta.json';
-import CampaignABI from '../../../../../blockchain/artifacts/contracts/Campaign.sol/Campaign.json';
+import CampaignABI from '@/utils/abis/Campaign.json';
 import { ethers } from 'ethers';
 import type { Log, EventLog } from 'ethers';
 
