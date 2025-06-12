@@ -1,76 +1,50 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { ethers } from 'ethers';
+import { getProvider } from '@/utils/ethers';
+import CampaignABI from '@/app/data/CampaignABI.json';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    const { campaignAddress } = req.query;
-
-    if (!campaignAddress || typeof campaignAddress !== 'string') {
-      return res.status(400).json({ error: 'Invalid campaign address' });
-    }
-
-    try {
-      const requests = await prisma.request.findMany({
-        where: { campaignAddress },
-        select: {
-          id: true, // 返回 requestId     
-          reason: true,
-          amount: true,
-          is_finalized: true,
-          approvalCount: true,
-        },
-      });
-
-      console.log('Fetched requests:', requests); // 調試用
-      return res.status(200).json(requests);
-    } catch (error) {
-      console.error('❌ Error fetching requests:', error);
-      return res.status(500).json({ error: 'Failed to fetch requests' });
-    }
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (req.method === 'POST') {
-    const {
-      txHash,
-      campaignAddress,
-      reason,
-      amount,
-      gasCost
-    } = req.body;
+  const { campaignAddress } = req.query;
 
-    console.log('📥 Incoming request to /api/requests:', req.body);
-
-    const parsedAmount = parseFloat(amount);
-    const parsedGasCost = gasCost !== undefined ? parseFloat(gasCost) : null;
-
-    if (!txHash || !campaignAddress || !reason || isNaN(parsedAmount)) {
-      return res.status(400).json({ error: 'Missing or invalid required fields' });
-    }
-
-    try {
-      const request = await prisma.request.create({
-        data: {
-          txHash,
-          campaignAddress,
-          reason,
-          amount: parsedAmount,
-          gasCost: parsedGasCost
-        }
-      });
-
-      return res.status(201).json(request);
-    } catch (err: any) {
-      console.error("❌ Error creating request:", err);
-
-      if (err.code === 'P2002') {
-        return res.status(409).json({ error: 'Duplicate txHash or (reason, amount) for campaign already exists' });
-      }
-
-      return res.status(500).json({ error: 'Internal server error' });
-    }
+  if (!campaignAddress || typeof campaignAddress !== 'string') {
+    return res.status(400).json({ error: 'Invalid campaign address' });
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  try {
+    const provider = getProvider();
+
+    const contract = new ethers.Contract(campaignAddress, CampaignABI, provider);
+
+    const events = await contract.queryFilter(
+      contract.filters.RequestCreated(),
+      0,
+      'latest'
+    );
+
+    const requests = await Promise.all(events.map(async (ev) => {
+      const eventLog = ev as ethers.EventLog; // 顯式斷言
+      const block = await provider.getBlock(ev.blockNumber);
+      if (!block) throw new Error(`Block ${ev.blockNumber} not found`);
+
+      return {
+        id: eventLog.args?.index?.toNumber(), // 你原本是用 id → 用 index 當 id
+        reason: eventLog.args?.description,
+        amount: eventLog.args?.value?.toString(),
+        recipient: eventLog.args?.recipient,
+        createdAt: new Date(block.timestamp * 1000).toISOString(),
+      };
+    }));
+
+    // sort by id ASC
+    requests.sort((a, b) => a.id - b.id);
+
+    res.status(200).json(requests);
+  } catch (error) {
+    console.error('❌ Error fetching requests:', error);
+    res.status(500).json({ error: 'Failed to fetch requests' });
+  }
 }

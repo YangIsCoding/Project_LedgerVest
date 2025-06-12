@@ -1,11 +1,22 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { FaPlus, FaWallet, FaEthereum, FaUsers } from 'react-icons/fa';
 
+interface CampaignSummary {
+  address: string;
+  title: string;
+  manager: string;
+  minimumContribution: string;
+  balance: string;
+  approversCount: number;
+}
+
 interface ActiveCampaignsSectionProps {
   isConnected: boolean;
   isLoading: boolean;
-  campaignSummaries: any[]; // Replace 'any' with the actual type
+  campaignSummaries: CampaignSummary[];
   formatEther: (wei: string, decimals?: number) => string;
 }
 
@@ -15,8 +26,8 @@ const ActiveCampaignsSection: React.FC<ActiveCampaignsSectionProps> = ({
   campaignSummaries,
   formatEther,
 }) => {
-  console.log("isConnected:", isConnected);
-  console.log("isLoading:", isLoading);
+  const displayedCampaigns = campaignSummaries.slice(0, 3);
+
   return (
     <section className="py-16 text-gray-800 dark:text-white-200">
       <div className="container mx-auto px-4">
@@ -53,14 +64,17 @@ const ActiveCampaignsSection: React.FC<ActiveCampaignsSectionProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {campaignSummaries.slice(0, 3).map((campaign) => (
-              <div key={campaign.address} className="border rounded-lg shadow-xs overflow-hidden bg-white">
+            {displayedCampaigns.map((campaign) => (
+              <div
+                key={campaign.address}
+                className="border rounded-lg shadow-xs overflow-hidden bg-white hover:shadow-md transition-shadow"
+              >
                 <div className="border-b p-4">
                   <h2 className="font-semibold text-lg mb-1 break-all">
-                    <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
-                      Campaign @ {campaign.address.substring(0, 10)}...
-                    </Link>
-                  </h2>
+                  <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
+                    {campaign.title ? campaign.title : `Campaign @ ${campaign.address.substring(0, 10)}...`}
+                  </Link>
+                </h2>
                   <p className="text-sm text-gray-500">Manager: {campaign.manager.substring(0, 10)}...</p>
                 </div>
 
@@ -70,7 +84,7 @@ const ActiveCampaignsSection: React.FC<ActiveCampaignsSectionProps> = ({
                       <div className="text-sm text-gray-500 mb-1">Minimum</div>
                       <div className="font-medium flex items-center justify-center">
                         <FaEthereum className="mr-1 text-gray-700" />
-                        <span>{formatEther(campaign.minimumContribution)} ETH</span>
+                        <span>{formatEther(campaign.minimumContribution, 2)} ETH</span>
                       </div>
                     </div>
 
@@ -78,7 +92,7 @@ const ActiveCampaignsSection: React.FC<ActiveCampaignsSectionProps> = ({
                       <div className="text-sm text-gray-500 mb-1">Balance</div>
                       <div className="font-medium flex items-center justify-center">
                         <FaEthereum className="mr-1 text-gray-700" />
-                        <span>{formatEther(campaign.balance)} ETH</span>
+                        <span>{formatEther(campaign.balance, 2)} ETH</span>
                       </div>
                     </div>
 

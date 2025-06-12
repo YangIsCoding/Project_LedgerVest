@@ -1,0 +1,12 @@
+[
+  {
+    "contractAddress": "0x1234....",
+    "title": "Project A",
+    "description": "Awesome project",
+    "contactInfo": "contact@example.com",
+    "createdAt": "2024-06-01T00:00:00Z",
+    "creatorWallet": "0xabc...",
+    "targetAmount": 1,
+    "minimumContribution": 0.1
+  }
+]

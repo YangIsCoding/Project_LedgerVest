@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Alice",
+    "email": "alice@example.com",
+    "message": "Hi, love your project!",
+    "receivedAt": "2025-06-11T12:34:56Z"
+  },
+  {
+    "name": "Yang",
+    "email": "allanustw@gmail.com",
+    "message": "good",
+    "receivedAt": "2025-06-12T00:28:20.050Z"
+  },
+  {
+    "name": "yang",
+    "email": "allanustw@gmail.com",
+    "message": "test",
+    "receivedAt": "2025-06-12T00:47:42.901Z"
+  }
+]

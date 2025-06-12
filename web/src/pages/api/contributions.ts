@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import path from 'path';
+import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
 
-const prisma = new PrismaClient();
+const dataPath = path.join(process.cwd(), 'src', 'app', 'data', 'contributions.json');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -24,28 +25,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    await prisma.user.upsert({
-      where: { walletAddress: contributorAddress },
-      update: { lastLogin: new Date() },
-      create: {
-        id: randomUUID(),
-        walletAddress: contributorAddress,
-        contactInfo: "N/A",
-      },
-    });
+    const fileContent = await fs.readFile(dataPath, 'utf-8').catch(() => '[]');
+    const contributions = JSON.parse(fileContent);
 
-    const contribution = await prisma.contribution.create({
-      data: {
-        txHash,
-        contributorAddress,
-        campaignAddress,
-        amount: Number(amount),
-        gasCost: gasCost ? Number(gasCost) : 0,
-        note: note || null,
-      },
-    });
+    const newContribution = {
+      id: randomUUID(),
+      txHash,
+      contributorAddress,
+      campaignAddress,
+      amount: Number(amount),
+      gasCost: gasCost ? Number(gasCost) : 0,
+      note: note || null,
+      receivedAt: new Date().toISOString(),
+    };
 
-    return res.status(201).json({ success: true, contribution });
+    contributions.push(newContribution);
+
+    await fs.writeFile(dataPath, JSON.stringify(contributions, null, 2), 'utf-8');
+
+    return res.status(201).json({ success: true, contribution: newContribution });
   } catch (error) {
     console.error('❌ Failed to save contribution:', error);
     return res.status(500).json({ success: false, error: 'Failed to save contribution' });

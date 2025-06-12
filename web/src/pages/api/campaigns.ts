@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { randomUUID } from 'crypto'; // ✅ 引入 uuid
+import path from 'path';
+import fs from 'fs/promises';
 
-const prisma = new PrismaClient();
+const dataPath = path.join(process.cwd(), 'src', 'app', 'data', 'campaignMeta.json');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -13,39 +13,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       targetAmount,
       walletAddress,
       contractAddress,
-      gasCost,
-      commission,
-      contactInfo
     } = req.body;
 
     try {
-      await prisma.user.upsert({
-        where: { walletAddress },
-        update: { lastLogin: new Date(), contactInfo },
-        create: {
-          id: randomUUID(), // ✅ 用 uuid 作為 primary key
-          walletAddress,
-          contactInfo,
-        },
-      });
+      // 讀取目前 campaignMeta.json
+      const fileContent = await fs.readFile(dataPath, 'utf-8');
+      const campaignMeta = JSON.parse(fileContent);
 
-      const campaign = await prisma.campaign.create({
-        data: {
-          title,
-          description,
-          minimumContribution: parseFloat(minimumContribution),
-          targetAmount: parseFloat(targetAmount),
-          contractAddress: contractAddress,
-          creatorAddress: walletAddress,
-          gasCost: parseFloat(gasCost),
-          commission: commission ? parseFloat(commission) : 0.01,
-        },
-      });
+      // 新增一筆新的 campaign meta
+      const newMeta = {
+        contractAddress,
+        creatorWallet: walletAddress,
+        title,
+        description,
+        targetAmount: parseFloat(targetAmount),
+        minimumContribution: parseFloat(minimumContribution),
+        createdAt: new Date().toISOString(),
+      };
 
-      return res.status(201).json({ success: true, campaign });
+      campaignMeta.push(newMeta);
+
+      // 回寫 json 檔
+      await fs.writeFile(dataPath, JSON.stringify(campaignMeta, null, 2), 'utf-8');
+
+      return res.status(201).json({ success: true, campaign: newMeta });
     } catch (err) {
-      console.error('❌ Error saving campaign:', err);
-      return res.status(500).json({ success: false, error: 'Failed to save campaign' });
+      console.error('❌ Error saving campaign meta:', err);
+      return res.status(500).json({ success: false, error: 'Failed to save campaign meta' });
     }
   } else {
     res.setHeader('Allow', ['POST']);

@@ -7,7 +7,7 @@ interface CreatedCampaign {
   description: string;
   contractAddress: string;
   targetAmount: number;
-  createdAt: string;
+  createdAt: number; // timestamp seconds
 }
 
 interface Props {
@@ -30,7 +30,7 @@ export default function CampaignsICreated({ createdCampaigns }: Props) {
             {createdCampaigns.map((campaign) => (
               <div
                 key={campaign.id}
-                className="border rounded-lg overflow-hidden"
+                className="border rounded-lg overflow-hidden transition-shadow hover:shadow-md"
               >
                 <div className="border-b p-4">
                   <h3 className="text-lg font-bold text-gray-800">
@@ -39,18 +39,20 @@ export default function CampaignsICreated({ createdCampaigns }: Props) {
                 </div>
                 <div className="p-4 bg-gray-50">
                   <p className="text-sm text-gray-600 line-clamp-2 mb-1">{campaign.description}</p>
-                  <p className="text-sm text-gray-500 mb-1">Target: {campaign.targetAmount} ETH</p>
-                  <p className="text-sm text-gray-400 mb-1">
-                    Created at: {new Date(campaign.createdAt).toLocaleDateString()}
+                  <p className="text-sm text-gray-500 mb-1">
+                    Target: {campaign.targetAmount.toFixed(2)} ETH
                   </p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-400 mb-1">
+                    Created at: {new Date(campaign.createdAt * 1000).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-gray-400 truncate">
                     Address: <span className="font-mono">{campaign.contractAddress.slice(0, 10)}...</span>
                   </p>
                 </div>
                 <div className="p-4 border-t">
                   <Link
                     href={`/campaigns/${campaign.contractAddress}`}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="inline-block bg-blue-600 text-white py-1 px-3 rounded-sm text-sm hover:bg-blue-700 transition-colors"
                   >
                     View Campaign →
                   </Link>

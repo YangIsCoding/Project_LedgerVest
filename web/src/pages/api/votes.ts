@@ -1,77 +1,53 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+// pages/api/vote.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { ethers } from 'ethers';
+import { getProvider } from '@/utils/ethers';
+import CampaignABI from '@/app/data/CampaignABI.json';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { txHash, requestId, voterAddress, gasCost } = req.body;
+  const { campaignAddress } = req.query;
 
-  // 检查必填字段
-  if (!txHash || !requestId || !voterAddress || gasCost === undefined) {
-    console.error('❌ Missing or invalid required fields:', {
-        txHash,
-        requestId,
-        voterAddress,
-        gasCost,
-    });
-
-    if (!txHash) {
-        console.error('❌ Missing txHash');
-    }
-    if (!requestId) {
-        console.error('❌ Missing requestId');
-    }
-    if (!voterAddress) {
-        console.error('❌ Missing voterAddress');
-    }
-    if (gasCost === undefined) {
-        console.error('❌ Missing or invalid gasCost');
-    }
-
-    return res.status(400).json({ error: 'Missing or invalid required fields' });
-    }
+  if (!campaignAddress || typeof campaignAddress !== 'string') {
+    return res.status(400).json({ error: 'Invalid campaign address' });
+  }
 
   try {
-    // 确保用户存在或创建新用户
-    await prisma.user.upsert({
-      where: { walletAddress: voterAddress },
-      update: { lastLogin: new Date() },
-      create: {
-        id: voterAddress,
-        walletAddress: voterAddress,
-        contactInfo: 'N/A'
-      },
-    });
+    const provider = getProvider();
 
-    // 创建投票记录
-    const request = await prisma.request.findUnique({
-    where: { id: requestId }
-    });
+    const contract = new ethers.Contract(campaignAddress, CampaignABI, provider);
 
-    if (!request) {
-        return res.status(404).json({ error: 'Request not found for given requestId' });
-    }
-    const vote = await prisma.vote.create({
-        data: {
-        txHash,
-        requestId,
-        voterAddress,
-        gasCost: gasCost ? parseFloat(gasCost) : undefined,
-        },
-    });
+    // 查 RequestApproved event
+    const events = await contract.queryFilter(
+      contract.filters.RequestApproved(),
+      0,
+      'latest'
+    );
 
-    return res.status(201).json({ success: true, vote });
-    } catch (error: any) {
-    console.error('❌ Failed to save vote:', error);
+    // async map 讀 block timestamp
+    const votes = await Promise.all(events.map(async (ev) => {
+      const eventLog = ev as ethers.EventLog;
+      const block = await provider.getBlock(ev.blockNumber);
+      if (!block) throw new Error(`Block ${ev.blockNumber} not found`);
 
-    if (error.code === 'P2002') {
-        return res.status(409).json({ error: 'Duplicate vote detected' });
-    }
+      return {
+        requestId: eventLog.args?.index?.toNumber(),
+        voterAddress: eventLog.args?.approver,
+        txHash: ev.transactionHash,
+        blockNumber: ev.blockNumber,
+        timestamp: new Date(block.timestamp * 1000).toISOString(),
+      };
+    }));
 
-    return res.status(500).json({ error: 'Failed to save vote', detail: error.message });
-    }
+    // 排序
+    votes.sort((a, b) => a.blockNumber - b.blockNumber);
+
+    res.status(200).json(votes);
+  } catch (error) {
+    console.error('❌ Error fetching votes:', error);
+    res.status(500).json({ error: 'Failed to fetch votes' });
+  }
 }

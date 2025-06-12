@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import {
   BarChart,
@@ -28,13 +26,16 @@ export default function CampaignPerformanceChart({ data }: Props) {
         <p className="text-gray-500">No campaign data yet.</p>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart
+            data={data}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="title" />
-            <YAxis />
+            <YAxis tickFormatter={(value) => `${value} ETH`} />
             <Tooltip
-            formatter={(value: number) => `${value} ETH`}
-            labelFormatter={(label) => `Campaign: ${label}`}
+              formatter={(value: number | string) => `${value} ETH`}
+              labelFormatter={(label) => `Campaign: ${label}`}
             />
             <Legend />
             <Bar dataKey="targetAmount" fill="#d1d5db" name="Target Amount" />

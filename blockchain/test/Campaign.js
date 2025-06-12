@@ -13,6 +13,18 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
     return await Campaign.attach(campaignAddress);
   }
 
+  async function createTestCampaign(minimum = "1", target = "10") {
+    await factory.connect(owner).createCampaign(
+      ethers.parseEther(minimum),
+      "Test Campaign",
+      "This is a test campaign.",
+      ethers.parseEther(target),
+       "test@contact.com",
+      { value: ethers.parseEther("0.05") }
+    );
+    campaign = await getLatestCampaign(factory);
+  }
+
   beforeEach(async function () {
     [owner, user1, user2, user3, recipient] = await ethers.getSigners();
 
@@ -22,12 +34,22 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should deploy multiple campaigns with correct managers", async function () {
-    await factory.connect(owner).createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    await factory.connect(user1).createCampaign(ethers.parseEther("2"), {
-      value: ethers.parseEther("0.05"),
-    });
+    await factory.connect(owner).createCampaign(
+      ethers.parseEther("1"),
+      "Campaign 1",
+      "Desc 1",
+      ethers.parseEther("10"),
+       "campaign1@example.com",
+      { value: ethers.parseEther("0.05") }
+    );
+    await factory.connect(user1).createCampaign(
+      ethers.parseEther("2"),
+      "Campaign 2",
+      "Desc 2",
+      ethers.parseEther("10"),
+      "campaign2@example.com",
+      { value: ethers.parseEther("0.05") }
+    );
 
     const campaigns = await factory.getDeployedCampaigns();
     expect(campaigns.length).to.equal(2);
@@ -41,10 +63,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should enforce minimum contribution", async function () {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await expect(
       campaign.connect(user1).contribute({ value: ethers.parseEther("0.5") })
@@ -55,10 +74,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should not finalize request if approvals are less than 2/3", async function () {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(user1).contribute({ value: ethers.parseEther("2") });
     await campaign.connect(user2).contribute({ value: ethers.parseEther("2") });
@@ -71,10 +87,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should not finalize request if contract has insufficient balance", async function () {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(user1).contribute({ value: ethers.parseEther("2") });
     await campaign.connect(user2).contribute({ value: ethers.parseEther("2") });
@@ -90,10 +103,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should revert if the same user tries to approve twice", async () => {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(user1).contribute({ value: ethers.parseEther("2") });
     await campaign.connect(owner).createRequest("Chair", ethers.parseEther("1"), recipient.address);
@@ -103,10 +113,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should revert if a non-approver tries to approve a request", async () => {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(owner).createRequest("Chair", ethers.parseEther("1"), recipient.address);
 
@@ -116,10 +123,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should emit ContributionReceived event", async () => {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await expect(
       campaign.connect(user1).contribute({ value: ethers.parseEther("2") })
@@ -127,10 +131,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should return correct summary from getSummary()", async function () {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(user1).contribute({ value: ethers.parseEther("2") });
 
@@ -141,26 +142,21 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should return correct request data from getRequest()", async function () {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(owner).createRequest("Buy CPU", ethers.parseEther("5"), recipient.address);
-    const request = await campaign.getRequest(0);
 
-    expect(request.description).to.equal("Buy CPU");
-    expect(request.value).to.equal(ethers.parseEther("5"));
-    expect(request.recipient).to.equal(recipient.address);
-    expect(request.complete).to.equal(false);
-    expect(request.approvalCount).to.equal(0);
+    const [description, value, recipientAddr, complete, approvalCount] = await campaign.getRequest(0);
+
+    expect(description).to.equal("Buy CPU");
+    expect(value).to.equal(ethers.parseEther("5"));
+    expect(recipientAddr).to.equal(recipient.address);
+    expect(complete).to.equal(false);
+    expect(approvalCount).to.equal(0);
   });
 
   it("should only allow manager to set approval threshold", async () => {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await expect(
       campaign.connect(user1).setApprovalThreshold(90)
@@ -171,10 +167,7 @@ describe("CampaignFactory & Campaign (with 2% fee)", function () {
   });
 
   it("should successfully complete a full campaign workflow with 2% fee", async function () {
-    await factory.createCampaign(ethers.parseEther("1"), {
-      value: ethers.parseEther("0.05"),
-    });
-    campaign = await getLatestCampaign(factory);
+    await createTestCampaign();
 
     await campaign.connect(user1).contribute({ value: ethers.parseEther("2") });
     await campaign.connect(user2).contribute({ value: ethers.parseEther("2") });

@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const prisma = new PrismaClient();
+import campaignMeta from '@/app/data/campaignMeta.json';
+import { getCampaignContract } from '@/utils/ethers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { walletAddress } = req.query;
@@ -11,34 +10,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 找出使用者創建的所有 campaign
-    const campaigns = await prisma.campaign.findMany({
-      where: { creatorAddress: walletAddress },
-      select: {
-        title: true,
-        targetAmount: true,
-        contractAddress: true,
+    // Filter campaigns created by this wallet
+    const campaigns = campaignMeta.filter(c => c.creatorWallet.toLowerCase() === walletAddress.toLowerCase());
+
+    const result = await Promise.all(campaigns.map(async c => {
+      const campaign = await getCampaignContract(c.contractAddress);
+      const targetAmount = await campaign.targetAmount();
+
+      // Finalized amount → 你要看你合約有沒有 totalFinalizedAmount 之類的 function → 假設有：
+      let finalizedAmount = 0;
+      try {
+        finalizedAmount = await campaign.totalFinalizedAmount(); // 如果有 function → call
+      } catch {
+        finalizedAmount = 0; // fallback
       }
-    });
 
-    // 找出所有 finalizations 並聚合
-    const finalizations = await prisma.finalization.findMany({
-      where: { fundSeekerAddr: walletAddress },
-      select: {
-        campaignAddr: true,
-        amount: true,
-      }
-    });
-
-    const finalizedMap: Record<string, number> = {};
-    finalizations.forEach(f => {
-      finalizedMap[f.campaignAddr] = (finalizedMap[f.campaignAddr] || 0) + f.amount;
-    });
-
-    const result = campaigns.map(c => ({
-      title: c.title.length > 12 ? `${c.title.slice(0, 12)}...` : c.title,
-      targetAmount: c.targetAmount,
-      finalizedAmount: finalizedMap[c.contractAddress] || 0,
+      return {
+        title: c.title.length > 12 ? `${c.title.slice(0, 12)}...` : c.title,
+        targetAmount: targetAmount.toString(),
+        finalizedAmount: finalizedAmount.toString()
+      };
     }));
 
     res.status(200).json(result);

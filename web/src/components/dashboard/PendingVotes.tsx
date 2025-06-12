@@ -35,7 +35,7 @@ export default function PendingVotes({
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                 </tr>
@@ -44,23 +44,28 @@ export default function PendingVotes({
                 {pendingRequests.map((request) => (
                   <tr key={`${request.campaignAddress}-${request.requestIndex}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{request.campaignAddress.substring(0, 8)}...</div>
+                      <div className="text-sm text-gray-900">
+                        {`${request.campaignAddress.substring(0, 6)}...${request.campaignAddress.substring(request.campaignAddress.length - 4)}`}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{request.description}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="text-sm text-gray-900 flex items-center justify-end">
                         <FaEthereum className="mr-1 text-gray-700" />
                         {formatEther(request.value)} ETH
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{request.recipient.substring(0, 8)}...</div>
+                      <div className="text-sm text-gray-500">
+                        {`${request.recipient.substring(0, 6)}...${request.recipient.substring(request.recipient.length - 4)}`}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <Link
                         href={`/campaigns/${request.campaignAddress}/requests/${request.requestIndex}`}
+                        aria-label={`Vote on request ${request.requestIndex} for campaign ${request.campaignAddress}`}
                         className="bg-green-600 text-white py-1 px-3 rounded-sm hover:bg-green-700 text-xs"
                       >
                         Vote

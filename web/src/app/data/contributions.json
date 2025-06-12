@@ -1,0 +1,12 @@
+[
+  {
+    "id": "uuid-xxxx",
+    "txHash": "0xabc123...",
+    "contributorAddress": "0x123...",
+    "campaignAddress": "0x456...",
+    "amount": 1.5,
+    "gasCost": 0.01,
+    "note": "Great project!",
+    "receivedAt": "2025-06-11T12:34:56Z"
+  }
+]

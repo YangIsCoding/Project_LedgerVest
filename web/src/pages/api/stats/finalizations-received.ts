@@ -1,8 +1,9 @@
-// /pages/api/stats/finalizations-received.ts
-import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const prisma = new PrismaClient();
+import { getProvider } from '@/utils/ethers';
+import campaignMeta from '@/app/data/campaignMeta.json';
+import CampaignABI from '../../../../../blockchain/artifacts/contracts/Campaign.sol/Campaign.json';
+import { ethers } from 'ethers';
+import type { Log, EventLog } from 'ethers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { walletAddress } = req.query;
@@ -12,17 +13,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const finalizations = await prisma.finalization.findMany({
-      where: { fundSeekerAddr: walletAddress },
-      select: {
-        amount: true,
-        timestamp: true,
-        campaignAddr: true,
-      },
-      orderBy: { timestamp: 'asc' },
-    });
+    const provider = getProvider();
 
-    res.status(200).json(finalizations);
+    const allFinalizations = [];
+
+    for (const meta of campaignMeta) {
+      const contract = new ethers.Contract(meta.contractAddress, CampaignABI.abi, provider);
+
+      // 假設 Finalized event 是這樣定義的：
+      // event Finalized(address indexed fundSeekerAddr, uint amount, uint timestamp);
+
+      const events = await contract.queryFilter(
+        contract.filters.Finalized(walletAddress),
+        0, // from block
+        'latest' // to block
+      );
+
+      for (const ev of events) {
+        const log = ev as EventLog; // 👉 斷言成 EventLog
+        const block = await provider.getBlock(log.blockNumber);
+        const timestamp = block?.timestamp ? new Date(block.timestamp * 1000).toISOString() : new Date().toISOString();
+
+        allFinalizations.push({
+          amount: log.args?.amount.toString(),
+          timestamp,
+          campaignAddr: meta.contractAddress
+        });
+      }
+    }
+
+    // sort by timestamp asc
+    allFinalizations.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    res.status(200).json(allFinalizations);
   } catch (err) {
     console.error('❌ Error fetching finalizations:', err);
     res.status(500).json({ error: 'Server error' });

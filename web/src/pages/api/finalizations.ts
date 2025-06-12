@@ -1,46 +1,52 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
+// /pages/api/stats/finalizations-received.ts
 
-const prisma = new PrismaClient();
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { ethers } from 'ethers';
+import { getProvider } from '@/utils/ethers';
+import CampaignABI from '@/app/data/CampaignABI.json'; // 你 Campaign.sol 的 ABI
+import campaignMeta from '@/app/data/campaignMeta.json'; // 你目前 deployed campaign meta
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  const { walletAddress } = req.query;
 
-  const {
-    txHash,
-    requestId,
-    fundSeekerAddr,
-    campaignAddr,
-    amount,
-    gasCost,
-  } = req.body;
-
-  if (!txHash || !requestId || !fundSeekerAddr || !campaignAddr || typeof amount !== 'number') {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (typeof walletAddress !== 'string') {
+    return res.status(400).json({ error: 'Invalid wallet address' });
   }
 
   try {
-    const finalization = await prisma.finalization.create({
-      data: {
-        txHash,
-        requestId,
-        fundSeekerAddr,
-        campaignAddr,
-        amount,
-        gasCost: gasCost !== undefined ? parseFloat(gasCost) : null,
-      },
-    });
+    const provider = getProvider();
 
-    return res.status(200).json(finalization);
-  } catch (err: any) {
-    console.error('❌ Error creating finalization:', err);
+    const allFinalizations = [];
 
-    if (err.code === 'P2002') {
-      return res.status(409).json({ error: 'Finalization already exists' });
+    for (const meta of campaignMeta) {
+      const contract = new ethers.Contract(meta.contractAddress, CampaignABI, provider);
+
+      const events = await contract.queryFilter(
+        contract.filters.RequestFinalized(null, null, walletAddress), // 你加了 fundSeekerAddr → 第三參數
+        0,
+        'latest'
+      );
+
+      for (const ev of events) {
+        const eventLog = ev as ethers.EventLog; // 顯式斷言
+
+        const block = await provider.getBlock(ev.blockNumber);
+        if (!block) continue;
+
+        allFinalizations.push({
+          amount: eventLog.args?.amount?.toString(),
+          timestamp: new Date(block.timestamp * 1000).toISOString(),
+          campaignAddr: meta.contractAddress
+        });
+      }
     }
 
-    return res.status(500).json({ error: 'Server error' });
+    // sort
+    allFinalizations.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    res.status(200).json(allFinalizations);
+  } catch (err) {
+    console.error('❌ Error fetching finalizations:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 }

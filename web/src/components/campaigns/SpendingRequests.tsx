@@ -15,8 +15,8 @@ interface SpendingRequestsProps {
   isCreatingRequest: boolean;
   requests: any[];
   displayEther: (wei: string) => string;
-  handleApproveRequest: (index: number, requestId: string) => Promise<void>;
-  handleFinalizeRequest: (index: number,  requestId: string) => Promise<void>;
+  handleApproveRequest: (index: number) => Promise<void>;
+  handleFinalizeRequest: (index: number) => Promise<void>;
   isApprover: boolean;
 }
 
@@ -37,9 +37,9 @@ export default function SpendingRequests({
   handleApproveRequest,
   handleFinalizeRequest,
   isApprover,
-}: SpendingRequestsProps )
-{console.log('Requests:', requests);
-  
+}: SpendingRequestsProps) {
+  console.log('Requests:', requests);
+
   return (
     <div className="bg-white rounded-lg shadow-xs overflow-hidden">
       <div className="p-6">
@@ -60,6 +60,7 @@ export default function SpendingRequests({
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h3 className="text-lg font-semibold mb-4">Create New Request</h3>
             <form onSubmit={handleCreateRequest}>
+              {/* Description */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <input
@@ -72,18 +73,15 @@ export default function SpendingRequests({
                 />
               </div>
 
+              {/* Amount */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Value (ETH)</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    {/* Ethereum Icon */}
-                    <span className="text-gray-400">ETH</span>
-                  </div>
                   <input
                     type="number"
                     value={requestAmount}
                     onChange={(e) => setRequestAmount(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg"
                     placeholder="Amount in ETH"
                     step="0.0001"
                     min="0"
@@ -92,6 +90,7 @@ export default function SpendingRequests({
                 </div>
               </div>
 
+              {/* Recipient */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Address</label>
                 <input
@@ -137,23 +136,28 @@ export default function SpendingRequests({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approvals</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th>ID</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Recipient</th>
+                  <th>Approvals</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {requests.map((request) => (
                   <tr key={request.index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{request.index}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{request.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{displayEther(request.value)} ETH</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{`${request.recipient.substring(0, 6)}...${request.recipient.substring(request.recipient.length - 4)}`}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td>{request.index}</td>
+                    <td>
+                      <div>{request.description}</div>
+                      <p className="text-xs text-gray-500 mt-1">🕒 Created At: {request.timestamp}</p>
+                    </td>
+                    <td>{displayEther(request.value)} ETH</td>
+                    <td>
+                      {`${request.recipient.substring(0, 6)}...${request.recipient.substring(request.recipient.length - 4)}`}
+                    </td>
+                    <td>
                       {request.approvalCount}/{request.approvers}
                       <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                         <div
@@ -162,7 +166,7 @@ export default function SpendingRequests({
                         ></div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td>
                       {request.complete ? (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                           Completed
@@ -173,24 +177,19 @@ export default function SpendingRequests({
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="text-right">
                       {!request.complete && isApprover && (
                         <button
-                          onClick={() => handleApproveRequest(request.index, request.requestId)}
-                          className={`text-blue-600 hover:text-blue-900 mr-4`}
+                          onClick={() => handleApproveRequest(request.index)}
+                          disabled={request.hasApproved} // 禁止重複按
+                          className={`text-blue-600 hover:text-blue-900 mr-4 ${request.hasApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           Approve
                         </button>
                       )}
                       {!request.complete && isManager && (
                         <button
-                          onClick={() => {
-                            if (!request.requestId) {
-                              console.error('❌ Missing requestId for finalization');
-                              return;
-                            }
-                            handleFinalizeRequest(request.index, request.requestId);
-                          }}
+                          onClick={() => handleFinalizeRequest(request.index)}
                           className="text-green-600 hover:text-green-900"
                         >
                           Finalize
@@ -198,8 +197,7 @@ export default function SpendingRequests({
                       )}
                     </td>
                   </tr>
-                ) )}
-                  
+                ))}
               </tbody>
             </table>
           </div>

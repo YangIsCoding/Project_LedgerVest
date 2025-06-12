@@ -2,120 +2,106 @@
 
 import { useState, useEffect } from 'react';
 import { useWallet } from '@/lib/context/WalletContext';
-import { getProvider, getCampaignContract } from '@/utils/ethers';
+import { getProvider, getCampaignContract, getFactoryContract } from '@/utils/ethers';
 import ProjectsHeader from '@/components/projectsPage/ProjectsHeader';
 import CampaignGrid from '@/components/projectsPage/CampaignGrid';
 import NoCampaigns from '@/components/projectsPage/NoCampaigns';
+import { Interface } from 'ethers';
 
-// Campaign summary type
-interface CampaignSummary {
+export interface CampaignSummary {
   address: string;
+  title: string; // ⭐️ 補抓 title
   manager: string;
   minimumContribution: string;
   balance: string;
   approversCount: number;
   isLoading: boolean;
-  title?: string;
-  createdAt?: string;
+  createdAt: number;
 }
 
 export default function ProjectsPage() {
-  const { isConnected, campaigns, loadCampaigns } = useWallet();
+  const { isConnected } = useWallet();
   const [campaignSummaries, setCampaignSummaries] = useState<CampaignSummary[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Load campaign list when wallet connects
   useEffect(() => {
     if (isConnected) {
-      loadCampaigns();
+      fetchCampaignSummaries();
+    } else {
+      setCampaignSummaries([]);
+      setIsLoading(false);
     }
-  }, [isConnected, loadCampaigns]);
+  }, [isConnected]);
 
-  // Get summary data for each campaign
-  useEffect(() => {
-    const fetchCampaignSummaries = async () => {
-      if (!isConnected || campaigns.length === 0) {
-        setIsLoading(false);
-        return;
-      }
+  async function fetchCampaignSummaries() {
+    try {
+      setIsLoading(true);
 
-      // Initialize with loading state
-      const initialSummaries = campaigns.map(address => ({
-        address,
-        manager: '',
-        minimumContribution: '0',
-        balance: '0',
-        approversCount: 0,
-        isLoading: true
-      }));
+      const provider = getProvider();
+      const factory = await getFactoryContract();
 
-      setCampaignSummaries(initialSummaries);
+      const iface = factory.interface as Interface;
+      const events = await factory.queryFilter(factory.filters.CampaignCreated(), 0, 'latest');
 
-      // Fetch data for each campaign
-      try {
-        const summariesPromises = campaigns.map(async (address) => {
+      console.log('CampaignCreated events:', events);
+
+      const summariesPromises = events.map(async (log) => {
+        const parsed = (() => {
           try {
-            const campaign = await getCampaignContract(address);
-
-            const manager = await campaign.manager();
-            const minimumContribution = await campaign.minimumContribution();
-            const approversCount = await campaign.approversCount();
-
-            // Get balance from provider
-            const provider = getProvider(); // get the provider instance
-            const balance = provider ? await provider.getBalance( address ) : '0';
-            
-            let title = '';
-            let createdAt = '';
-            try {
-              const res = await fetch(`/api/campaigns/${address}`);
-              if (res.ok) {
-                const data = await res.json();
-                title = data.title || '';
-                createdAt = new Date(data.createdAt).toLocaleDateString(); // or .toLocaleString()
-              }
-            } catch (err) {
-              console.error(`Failed to fetch metadata for campaign ${address}:`, err);
-            }
-
-            return {
-              address,
-              manager,
-              minimumContribution: minimumContribution.toString(),
-              balance: balance.toString(),
-              approversCount: Number(approversCount),
-              isLoading: false,
-              title,
-              createdAt,
-            };
-          } catch (error) {
-            console.error(`Error fetching data for campaign ${address}:`, error);
-            return {
-              address,
-              manager: 'Error loading',
-              minimumContribution: '0',
-              balance: '0',
-              approversCount: 0,
-              isLoading: false
-            };
+            return iface.parseLog(log);
+          } catch {
+            console.warn('Skipping non-matching log:', log);
+            return null;
           }
-        });
+        })();
 
-        // Update with loaded data
-        const results = await Promise.all(summariesPromises);
-        setCampaignSummaries(results);
-      } catch (error) {
-        console.error("Error fetching campaign summaries:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        if (!parsed) return null;
 
-    fetchCampaignSummaries();
-  }, [campaigns, isConnected]);
+        const campaignAddress = parsed.args.campaignAddress;
+        const block = await provider.getBlock(log.blockNumber);
 
-  // Format the wei value to ETH with a given number of decimals
+        if (!block) {
+          console.warn(`Block ${log.blockNumber} not found, skipping campaign ${campaignAddress}`);
+          return null;
+        }
+
+        try {
+          const campaign = await getCampaignContract(campaignAddress);
+
+          const manager = await campaign.manager();
+          const title = await campaign.title(); // ⭐️ 抓 title
+          const minimumContribution = await campaign.minimumContribution();
+          const approversCount = await campaign.approversCount();
+          const balance = await provider.getBalance(campaignAddress);
+
+          return {
+            address: campaignAddress,
+            title,
+            manager,
+            minimumContribution: minimumContribution.toString(),
+            balance: balance.toString(),
+            approversCount: Number(approversCount),
+            isLoading: false,
+            createdAt: block.timestamp
+          };
+        } catch (error) {
+          console.error(`Error loading campaign at ${campaignAddress}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(summariesPromises);
+      const cleanResults = results.filter((x): x is CampaignSummary => x !== null);
+
+      setCampaignSummaries(cleanResults);
+    } catch (error) {
+      console.error('Error fetching campaign summaries:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const formatEther = (wei: string, decimals = 4) => {
     try {
       const ethValue = parseFloat(wei) / 1e18;
@@ -127,13 +113,21 @@ export default function ProjectsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <ProjectsHeader isConnected={isConnected} isFilterOpen={isFilterOpen} setIsFilterOpen={setIsFilterOpen} />
+      <ProjectsHeader
+        isConnected={isConnected}
+        isFilterOpen={isFilterOpen}
+        setIsFilterOpen={setIsFilterOpen}
+      />
 
-      {isLoading ? (
+      {!isConnected ? (
+        <div className="text-center py-12 text-gray-500">
+          Please connect your wallet to view campaigns.
+        </div>
+      ) : isLoading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      ) : campaigns.length === 0 ? (
+      ) : campaignSummaries.length === 0 ? (
         <NoCampaigns />
       ) : (
         <CampaignGrid campaignSummaries={campaignSummaries} formatEther={formatEther} />

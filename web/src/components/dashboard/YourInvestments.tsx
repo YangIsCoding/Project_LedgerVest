@@ -30,14 +30,17 @@ export default function YourInvestments({
           <div className="text-center py-8">
             <FaHandHoldingUsd className="text-4xl text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">You haven't invested in any campaigns yet.</p>
-            <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded-sm hover:bg-blue-700">
+            <Link href="/projects" className="bg-blue-600 text-white py-2 px-4 rounded-sm hover:bg-blue-700 transition-colors">
               Browse Campaigns
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {userContributions.map((campaign) => (
-              <div key={campaign.address} className="border rounded-lg overflow-hidden">
+              <div
+                key={campaign.address}
+                className="border rounded-lg overflow-hidden transition-shadow hover:shadow-md"
+              >
                 <div className="border-b p-4">
                   <h3 className="font-semibold truncate">
                     <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline">
@@ -51,7 +54,7 @@ export default function YourInvestments({
                       <p className="text-sm text-gray-500">Balance</p>
                       <p className="font-medium flex items-center">
                         <FaEthereum className="mr-1 text-gray-700" />
-                        {formatEther(campaign.balance)} ETH
+                        {formatEther(campaign.balance, 2)} ETH
                       </p>
                     </div>
                     <div>
@@ -61,7 +64,10 @@ export default function YourInvestments({
                   </div>
                 </div>
                 <div className="p-4 border-t">
-                  <Link href={`/campaigns/${campaign.address}`} className="text-blue-600 hover:underline text-sm">
+                  <Link
+                    href={`/campaigns/${campaign.address}`}
+                    className="inline-block bg-blue-600 text-white py-1 px-3 rounded-sm text-sm hover:bg-blue-700 transition-colors"
+                  >
                     View Details →
                   </Link>
                 </div>

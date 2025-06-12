@@ -1,4 +1,3 @@
-// components/dashboard/FundsRaisedChart.tsx
 import React from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -16,11 +15,17 @@ export default function FundsRaisedChart({ data }: Props) {
         <p className="text-gray-500">No funds raised yet.</p>
       ) : (
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data}>
+          <LineChart
+            data={data}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
+            <YAxis tickFormatter={(value) => `${value} ETH`} />
+            <Tooltip
+              formatter={(value: number | string) => `${value} ETH`}
+              labelFormatter={(label) => `Date: ${label}`}
+            />
             <Line type="monotone" dataKey="totalAmount" stroke="#3b82f6" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>

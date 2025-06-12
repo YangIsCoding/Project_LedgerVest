@@ -1,15 +1,13 @@
 // src/app/api/admin/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import adminUsers from '@/app/data/adminUsers.json'; // Import the json data
 
-const prisma = new PrismaClient();
-
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const admins = await prisma.admin.findMany();
-    return NextResponse.json(admins);
+    // Return the full list of admin users
+    return NextResponse.json(adminUsers);
   } catch (err) {
-    console.error('❌ Error fetching admins:', err);
-    return NextResponse.json({ error: 'Failed to fetch admins' }, { status: 500 });
+    console.error('❌ Error fetching admin users:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

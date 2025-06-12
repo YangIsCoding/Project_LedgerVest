@@ -1,0 +1,16 @@
+[
+  {
+    "walletAddress": "0xaada21fD544dA24B3b96E465C4c7074f4D6E8632",
+    "isBlocked": false,
+    "email": "allanustw@gmail.com",
+    "username": "Admin1",
+    "createdAt": "2024-06-01T00:00:00.000Z"
+  },
+  {
+    "walletAddress": "0x1111222233334444555566667777888899990000",
+    "isBlocked": true,
+    "email": "user2@example.com",
+    "username": "User2",
+    "createdAt": "2025-06-01T00:00:00.000Z"
+  }
+]

@@ -1,9 +1,9 @@
-// /pages/api/stats/funds-raised.ts
-
-import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const prisma = new PrismaClient();
+import { getProvider } from '@/utils/ethers';
+import campaignMeta from '@/app/data/campaignMeta.json';
+import CampaignABI from '../../../../../blockchain/artifacts/contracts/Campaign.sol/Campaign.json';
+import { ethers } from 'ethers';
+import type { Log, EventLog } from 'ethers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { walletAddress } = req.query;
@@ -13,27 +13,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 找出使用者創建的所有 Campaign
-    const campaigns = await prisma.campaign.findMany({
-      where: { creatorAddress: walletAddress },
-      select: { contractAddress: true },
-    });
+    const provider = getProvider();
 
-    const campaignAddresses = campaigns.map((c) => c.contractAddress);
+    // 先找到這 user 建立的 campaigns
+    const userCampaigns = campaignMeta.filter(c => c.creatorWallet.toLowerCase() === walletAddress.toLowerCase());
 
-    // 找出這些 Campaign 的所有 contributions
-    const contributions = await prisma.contribution.findMany({
-      where: {
-        campaignAddress: { in: campaignAddresses },
-      },
-      select: {
-        amount: true,
-        timestamp: true,
-      },
-      orderBy: { timestamp: 'asc' },
-    });
+    const allContributions = [];
 
-    res.status(200).json(contributions);
+    for (const meta of userCampaigns) {
+      const contract = new ethers.Contract(meta.contractAddress, CampaignABI.abi, provider);
+
+      // 直接抓全部 ContributionReceived event
+      const events = await contract.queryFilter(
+        contract.filters.ContributionReceived(),
+        0,
+        'latest'
+      );
+
+      for (const ev of events) {
+        const log = ev as EventLog;
+        const block = await provider.getBlock(log.blockNumber);
+        const timestamp = block?.timestamp ? new Date(block.timestamp * 1000).toISOString() : new Date().toISOString();
+
+        allContributions.push({
+          amount: log.args?.amount.toString(),
+          timestamp,
+          campaignAddress: meta.contractAddress
+        });
+      }
+    }
+
+    // sort by timestamp asc
+    allContributions.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    res.status(200).json(allContributions);
   } catch (error) {
     console.error('❌ Error fetching funds raised:', error);
     res.status(500).json({ error: 'Internal server error' });

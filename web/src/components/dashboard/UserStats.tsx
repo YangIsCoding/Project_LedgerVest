@@ -17,20 +17,20 @@ export default function UserStats({
           <FaUserCircle className="mr-2 text-blue-600" /> Your User Account
         </h2>
       </div>
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-gray-50 rounded-sm p-3">
-            <div className="text-sm text-gray-500">Your Investments</div>
-            <div className="text-xl font-bold flex items-center">
-              <FaHandHoldingUsd className="mr-1 text-blue-600" />
+      <div className="p-4 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-500 mb-1">Your Investments</div>
+            <div className="text-2xl font-bold flex items-center">
+              <FaHandHoldingUsd className="mr-2 text-blue-600" />
               {userContributionsLength}
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-sm p-3">
-            <div className="text-sm text-gray-500">Pending Votes</div>
-            <div className="text-xl font-bold flex items-center">
-              <FaVoteYea className="mr-1 text-blue-600" />
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-500 mb-1">Pending Votes</div>
+            <div className="text-2xl font-bold flex items-center">
+              <FaVoteYea className="mr-2 text-blue-600" />
               {pendingRequestsLength}
             </div>
           </div>

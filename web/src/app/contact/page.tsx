@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -12,18 +13,28 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setStatus('');
 
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-    if (res.ok) {
-      setStatus('Message sent!');
-      setForm({ name: '', email: '', message: '' });
-    } else {
-      setStatus('Failed to send message.');
+      if (res.ok) {
+        setStatus('✅ Message sent!');
+        setForm({ name: '', email: '', message: '' });
+      } else {
+        const errorData = await res.json();
+        setStatus(`❌ Failed to send message: ${errorData.message || 'Unknown error.'}`);
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setStatus('❌ Failed to send message. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,11 +68,19 @@ export default function ContactPage() {
           required
           className="w-full p-2 border border-gray-300 rounded h-32"
         />
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Send Message
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          {isSubmitting ? 'Sending...' : 'Send Message'}
         </button>
       </form>
-      {status && <p className="mt-4 text-sm text-green-600">{status}</p>}
+      {status && <p className={`mt-4 text-sm ${status.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+        {status}
+      </p>}
     </div>
   );
 }

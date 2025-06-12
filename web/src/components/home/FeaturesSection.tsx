@@ -4,80 +4,64 @@ import {
 } from 'react-icons/fa';
 
 interface FeaturesSectionProps {
-  // You can define props here if needed
+  className?: string;
 }
 
-const FeaturesSection: React.FC<FeaturesSectionProps> = () => {
+const FeaturesSection: React.FC<FeaturesSectionProps> = ({ className = '' }) => {
   return (
-    <section className="py-16 bg-gray-50">
+    <section className={`py-20 bg-gray-50 ${className}`}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Platform Features</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Platform Features</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             What makes our platform unique
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-white rounded-lg shadow-xs p-6">
-            <div className="flex items-center mb-4">
-              <FaShieldAlt className="text-2xl text-blue-600 mr-3" />
-              <h4 className="text-xl font-bold">Investor Protection</h4>
+          {[
+            {
+              icon: FaShieldAlt,
+              title: 'Investor Protection',
+              desc: 'Collateral mechanisms and voting systems ensure your investments are protected.',
+            },
+            {
+              icon: FaVoteYea,
+              title: 'Fund Approval',
+              desc: 'Investors vote on fund usage to ensure transparency and proper allocation.',
+            },
+            {
+              icon: FaWallet,
+              title: 'Secure Transactions',
+              desc: 'All transactions are managed through secure smart contracts on the blockchain.',
+            },
+            {
+              icon: FaStar,
+              title: 'Credit Scoring',
+              desc: 'Companies build reputation through successful repayments and responsible fund usage.',
+            },
+            {
+              icon: FaBalanceScale,
+              title: 'Risk Grading',
+              desc: 'Investment opportunities are graded to help investors choose based on risk tolerance.',
+            },
+            {
+              icon: FaFileInvoiceDollar,
+              title: 'Automated Payments',
+              desc: 'Interest and principal payments are distributed automatically based on investment proportion.',
+            },
+          ].map(({ icon: Icon, title, desc }, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-xs p-6 hover:shadow-md transition-shadow duration-200 group"
+            >
+              <div className="flex items-center mb-4">
+                <Icon className="text-2xl text-blue-600 mr-3 transition-transform duration-200 group-hover:scale-110" />
+                <h4 className="text-xl font-bold">{title}</h4>
+              </div>
+              <p className="text-gray-600">{desc}</p>
             </div>
-            <p className="text-gray-600">
-              Collateral mechanisms and voting systems ensure your investments are protected.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-xs p-6">
-            <div className="flex items-center mb-4">
-              <FaVoteYea className="text-2xl text-blue-600 mr-3" />
-              <h4 className="text-xl font-bold">Fund Approval</h4>
-            </div>
-            <p className="text-gray-600">
-              Investors vote on fund usage to ensure transparency and proper allocation.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-xs p-6">
-            <div className="flex items-center mb-4">
-              <FaWallet className="text-2xl text-blue-600 mr-3" />
-              <h4 className="text-xl font-bold">Secure Transactions</h4>
-            </div>
-            <p className="text-gray-600">
-              All transactions are managed through secure smart contracts on the blockchain.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-xs p-6">
-            <div className="flex items-center mb-4">
-              <FaStar className="text-2xl text-blue-600 mr-3" />
-              <h4 className="text-xl font-bold">Credit Scoring</h4>
-            </div>
-            <p className="text-gray-600">
-              Companies build reputation through successful repayments and responsible fund usage.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-xs p-6">
-            <div className="flex items-center mb-4">
-              <FaBalanceScale className="text-2xl text-blue-600 mr-3" />
-              <h4 className="text-xl font-bold">Risk Grading</h4>
-            </div>
-            <p className="text-gray-600">
-              Investment opportunities are graded to help investors choose based on risk tolerance.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-xs p-6">
-            <div className="flex items-center mb-4">
-              <FaFileInvoiceDollar className="text-2xl text-blue-600 mr-3" />
-              <h4 className="text-xl font-bold">Automated Payments</h4>
-            </div>
-            <p className="text-gray-600">
-              Interest and principal payments are distributed automatically based on investment proportion.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </section>

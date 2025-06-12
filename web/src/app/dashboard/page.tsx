@@ -1,62 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useWallet } from '@/lib/context/WalletContext';
-import { getCampaignContract, formatEther, getProvider } from '@/utils/ethers';
-import { FaFileContract,FaSignInAlt } from 'react-icons/fa';
-import { useSession } from 'next-auth/react';
-
-
-// Components
+import { useAccount } from 'wagmi';
+import { getCampaignContract, formatEther, getProvider , getFactoryContract} from '@/utils/ethers';
 import CampaignsICreated from '@/components/dashboard/YourCreatedCampaigns';
 import FundsRaisedChart from '@/components/dashboard/FundsRaisedChart';
-import AdminDashboardSection from '@/components/dashboard/AdminDashboardSection';
-import UserDashboardSection from '@/components/dashboard/UserDashboardSection';
-import AdminStats from '@/components/dashboard/AdminStats';
-import AdminActions from '@/components/dashboard/AdminActions';
-import UserStats from '@/components/dashboard/UserStats';
-import CampaignManagement from '@/components/dashboard/CampaignManagement';
-import YourInvestments from '@/components/dashboard/YourInvestments';
-import PendingVotes from '@/components/dashboard/PendingVotes';
 import FinalizationsChart from '@/components/dashboard/FinalizationsChart';
 import CampaignPerformanceChart from '@/components/dashboard/CampaignPerformanceChart';
-import UserManagementPanel from '@/components/dashboard/UserManagementPanel';
-
-
-
-// Constants
-
-
-
-
+import PendingVotes from '@/components/dashboard/PendingVotes';
+import { FaSignInAlt } from 'react-icons/fa';
+import { EventLog, LogDescription } from 'ethers';
 
 // Types
-interface CampaignSummary {
-  address: string;
-  manager: string;
-  minimumContribution: string;
-  balance: string;
-  approversCount: number;
-  requestCount: number;
-}
-
-interface PendingRequest {
-  campaignAddress: string;
-  requestIndex: number;
-  description: string;
-  value: string;
-  recipient: string;
-  approvalCount: string;
-}
-
 interface CreatedCampaign {
   id: string;
   title: string;
   description: string;
   contractAddress: string;
   targetAmount: number;
-  createdAt: string;
+  createdAt: number;
 }
 
 interface ChartData {
@@ -69,47 +32,28 @@ interface FinalizationData {
   amount: number;
 }
 
-interface CampaignPerformance {
-  title: string;
-  targetAmount: number;
-  finalizedAmount: number;
+interface PendingRequest {
+  campaignAddress: string;
+  requestIndex: number;
+  description: string;
+  value: string;
+  recipient: string;
+  approvalCount: string;
 }
 
 export default function Dashboard() {
-  const [adminEmails, setAdminEmails] = useState<string[]>([]);
-  const [adminWallets, setAdminWallets] = useState<string[]>([]);
-  const { data: session, status } = useSession();
-  const { isConnected, account, campaigns, loadCampaigns } = useWallet();
-  // 從 session 拿到 email
-  const userEmail = session?.user?.email;
+  const { isConnected, address: account } = useAccount();
+  const { campaigns, loadCampaigns } = useWallet();
 
-  // 判斷是不是 admin
-  const isEmailAdmin = adminEmails.includes(userEmail || '');
-  const isWalletAdmin = adminWallets.includes(account || '');
-  const [isAdmin, setIsAdmin] = useState(false);
+  const ADMIN_WALLETS = ['0xaada21fd544da24b3b96e465c4c7074f4d6e8632'.toLowerCase()];
+  const isAdmin = ADMIN_WALLETS.includes(account?.toLowerCase() || '');
 
-  useEffect(() => {
-    const fetchAdmins = async () => {
-      try {
-        const res = await fetch('/api/admin');
-        if (res.ok) {
-          const data = await res.json();
-          setAdminEmails(data.filter((a: any) => a.email).map((a: any) => a.email));
-          setAdminWallets(data.filter((a: any) => a.walletAddress).map((a: any) => a.wallet));
-        }
-      } catch (err) {
-        console.error('Failed to load admin list', err);
-      }
-    };
-    fetchAdmins();
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      console.log('Updating isAdmin:', { isWalletAdmin, isEmailAdmin });
-      setIsAdmin(isWalletAdmin || isEmailAdmin);
-    }
-  }, [isWalletAdmin, isEmailAdmin]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
+  const [fundsRaisedData, setFundsRaisedData] = useState<ChartData[]>([]);
+  const [finalizationsData, setFinalizationsData] = useState<FinalizationData[]>([]);
+  const [campaignPerformanceData, setCampaignPerformanceData] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
 
   useEffect(() => {
     if (isConnected) {
@@ -117,206 +61,170 @@ export default function Dashboard() {
     }
   }, [isConnected, loadCampaigns]);
 
-  //hooks
-  const [isLoading, setIsLoading] = useState(true);
-  const [userContributions, setUserContributions] = useState<CampaignSummary[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
-  const [campaignSummaries, setCampaignSummaries] = useState<CampaignSummary[]>([]);
-  const [createdCampaigns, setCreatedCampaigns] = useState<CreatedCampaign[]>([]);
-  const [fundsRaisedData, setFundsRaisedData] = useState<ChartData[]>([]);
-  const [finalizationsData, setFinalizationsData] = useState<FinalizationData[]>([]);
-  const [campaignPerformanceData, setCampaignPerformanceData] = useState<CampaignPerformance[]>([]);
-  const [totalStats, setTotalStats] = useState({ contributors: 0, totalFunds: '0', pendingRequests: 0, finalizedFunds: '0' });
+  
+useEffect(() => {
+  const fetchData = async () => {
+    if (!isConnected || campaigns.length === 0 || !account) {
+      setIsLoading(false);
+      return;
+    }
 
+    try {
+      const provider = getProvider();
+      const factory = await getFactoryContract();
+      const iface = factory.interface;
 
+      const fundsMap: Record<string, number> = {};
+      const finalMap: Record<string, number> = {};
+      const campaignPerfMap: Record<string, number> = {};
+      const allPendingVotes: PendingRequest[] = [];
+      const createdCamps: CreatedCampaign[] = [];
 
+      // ⭐️ 抓所有 CampaignCreated events 先 cache 起來
+      const createdEvents = await factory.queryFilter(factory.filters.CampaignCreated(), 0, 'latest');
 
-  useEffect(() => {
-    console.log('fetchData called');
-    const fetchData = async () => {
-      if (!isConnected || campaigns.length === 0) return setIsLoading(false);
+      for (const address of campaigns) {
+        const campaign = await getCampaignContract(address);
 
-      try {
-        if (account) {
-          const [createdRes, fundChartRes, finalRes, perfRes] = await Promise.all([
-            fetch(`/api/created-campaigns?walletAddress=${account}`),
-            fetch(`/api/stats/funds-raised?walletAddress=${account}`),
-            fetch(`/api/stats/finalizations-received?walletAddress=${account}`),
-            fetch(`/api/stats/campaign-performance?walletAddress=${account}`)
-          ]);
+        // Contributions
+        const contributionEvents = await campaign.queryFilter(
+          campaign.filters.ContributionReceived(),
+          0,
+          'latest'
+        );
 
-          if (createdRes.ok) setCreatedCampaigns(await createdRes.json());
-          if (fundChartRes.ok) {
-            const contributions = await fundChartRes.json();
-            const daily: Record<string, number> = {};
-            contributions.forEach((c: { amount: number; timestamp: string }) => {
-              const date = new Date(c.timestamp).toLocaleDateString();
-              daily[date] = (daily[date] || 0) + c.amount;
-            });
-            let total = 0;
-            const formatted: ChartData[] = Object.entries(daily).sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-              .map(([date, amount]) => ({ date, totalAmount: total += amount }));
-            setFundsRaisedData(formatted);
-          }
+        for (const log of contributionEvents) {
+          const ev = log as unknown as EventLog;
+          const { contributor, amount } = ev.args;
+          const block = await provider.getBlock(log.blockNumber);
+          if (!block) continue;
+          const date = new Date(block.timestamp * 1000).toISOString().slice(0, 10); // yyyy-mm-dd
 
-          if (finalRes.ok) {
-            const finals = await finalRes.json();
-            console.log('Finalizations:', finals);
-            const finalDaily: Record<string, number> = {};
-            finals.forEach((f: { amount: number; timestamp: string }) => {
-              const date = new Date(f.timestamp).toLocaleDateString();
-              finalDaily[date] = (finalDaily[date] || 0) + f.amount;
-            });
-
-            let cumulative = 0;
-            const finalChart: FinalizationData[] = Object.entries(finalDaily)
-              .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-              .map(([date, amount]) => ({ date, amount: Number((cumulative += amount).toFixed(4)) }));
-            setFinalizationsData(finalChart);
-
-            const totalFinalizedFunds = finals.reduce(
-              (sum: number, f: { amount: string }) => sum + parseFloat(f.amount),
-              0
-            );
-            setTotalStats((prevStats) => {
-              const updatedStats = {
-                ...prevStats,
-                finalizedFunds: totalFinalizedFunds.toString(),
-              };
-              console.log('Updated Total Stats:', updatedStats);
-              return updatedStats;
-            });
-          }
-
-          if (perfRes.ok) {
-            const perfData = await perfRes.json();
-            const normalized = perfData.map((item: any) => ({
-              ...item,
-              finalizedAmount: Number((item.finalizedAmount / 1e18).toFixed(4)),
-            }));
-            setCampaignPerformanceData(normalized);
-          }
+          fundsMap[date] = (fundsMap[date] || 0) + parseFloat(formatEther(amount.toString()));
         }
 
-        const summaries = await Promise.all(campaigns.map(async (address) => {
-          try {
-            const campaign = await getCampaignContract(address);
-            const [manager, minContrib, approversCount] = await Promise.all([
-              campaign.manager(),
-              campaign.minimumContribution(),
-              campaign.approversCount()
-            ]);
-            const requestCount = campaign.requestsCount
-              ? Number(await campaign.requestsCount())
-              : campaign.getRequestsCount
-                ? Number(await campaign.getRequestsCount())
-                : 0;
-            const provider = getProvider();
-            const balance = await provider.getBalance(address);
-            return {
-              address,
-              manager,
-              minimumContribution: minContrib.toString(),
-              balance: balance.toString(),
-              approversCount: Number(approversCount),
-              requestCount
-            };
-          } catch {
-            return {
-              address,
-              manager: 'Error loading',
-              minimumContribution: '0',
-              balance: '0',
-              approversCount: 0,
-              requestCount: 0
-            };
+        // Finalizations + Performance
+        const finalizedEvents = await campaign.queryFilter(
+          campaign.filters.RequestFinalized(),
+          0,
+          'latest'
+        );
+
+        finalizedEvents.forEach((log) => {
+          const ev = log as unknown as EventLog;
+          const { amount, timestamp } = ev.args;
+          const date = new Date(Number(timestamp) * 1000).toISOString().slice(0, 10); // yyyy-mm-dd
+
+          finalMap[date] = (finalMap[date] || 0) + parseFloat(formatEther(amount.toString()));
+
+          if (!campaignPerfMap[address]) campaignPerfMap[address] = 0;
+          campaignPerfMap[address] += parseFloat(formatEther(amount.toString()));
+        });
+
+        // ⭐️ 抓該 campaign 的 createdAt timestamp
+        let createdTimestamp = 0;
+        const matchingEvent = createdEvents.find((log) => {
+          const parsed = iface.parseLog(log) as LogDescription;
+          const campaignAddress = parsed.args.campaignAddress;
+          return campaignAddress.toLowerCase() === address.toLowerCase();
+        });
+
+        if (matchingEvent) {
+          const block = await provider.getBlock(matchingEvent.blockNumber);
+          if (block) {
+            createdTimestamp = block.timestamp;
+          } else {
+            console.warn(`Block ${matchingEvent.blockNumber} not found for campaign ${address}`);
           }
-        }));
-
-        setCampaignSummaries(summaries);
-
-        if (isAdmin) {
-          const contributors = summaries.reduce((sum, c) => sum + c.approversCount, 0);
-          const totalFunds = summaries.reduce((sum, c) => sum + parseFloat(c.balance), 0).toString();
-          const pending = summaries.reduce((sum, c) => sum + c.requestCount, 0);
-          setTotalStats((prevStats) => ({
-            ...prevStats,
-            contributors,
-            totalFunds,
-            pendingRequests: pending,
-            finalizedFunds: prevStats.finalizedFunds, // 保留 finalizedFunds 的值
-          }));
-
-          // 確保 admin 也更新 userContributions
-          const contributions: CampaignSummary[] = summaries.filter((summary) =>
-            campaigns.includes(summary.address)
-          );
-          setUserContributions(contributions);
-        } else if (account) {
-          const contributions: CampaignSummary[] = [];
-          const requests: PendingRequest[] = [];
-
-          for (const address of campaigns) {
-            const campaign = await getCampaignContract(address);
-            if (await campaign.approvers(account)) {
-              const [manager, minContrib, approversCount] = await Promise.all([
-                campaign.manager(),
-                campaign.minimumContribution(),
-                campaign.approversCount()
-              ]);
-              const requestCount = campaign.requestsCount
-                ? Number(await campaign.requestsCount())
-                : campaign.getRequestsCount
-                  ? Number(await campaign.getRequestsCount())
-                  : 0;
-              const provider = getProvider();
-              const balance = await provider.getBalance(address);
-              contributions.push({ address, manager, minimumContribution: minContrib.toString(), balance: balance.toString(), approversCount: Number(approversCount), requestCount });
-
-              for (let i = 0; i < requestCount; i++) {
-                try {
-                  const request = await campaign.requests(i);
-                  const hasApproved = await campaign.approvals(i, account);
-                  if (!request.complete && !hasApproved) {
-                    requests.push({
-                      campaignAddress: address,
-                      requestIndex: i,
-                      description: request.description,
-                      value: request.value.toString(),
-                      recipient: request.recipient,
-                      approvalCount: request.approvalCount.toString()
-                    });
-                  }
-                } catch { continue; }
-              }
-            }
-          }
-
-          setUserContributions(contributions);
-          setPendingRequests(requests);
+        } else {
+          console.warn(`CampaignCreated event not found for campaign ${address}`);
         }
-      } catch (err) {
-        console.error('Error fetching campaign data:', err);
-      } finally {
-        setIsLoading(false);
+
+        // Created campaigns
+        const summary = await campaign.getSummary();
+        const manager = summary[4];
+        const title = summary[5];
+        const description = summary[6];
+        const targetAmount = summary[7];
+
+        if (manager.toLowerCase() === account.toLowerCase()) {
+          createdCamps.push({
+            id: address,
+            title,
+            description,
+            contractAddress: address,
+            targetAmount: parseFloat(formatEther(targetAmount.toString())),
+            createdAt: createdTimestamp, // ⭐️ 正確 timestamp
+          });
+        }
+
+        // PendingVotes
+        const requestCount = Number(summary[2]);
+        for (let i = 0; i < requestCount; i++) {
+          const req = await campaign.getRequest(i);
+          const hasApproved = await campaign.hasApproved(i, account);
+          const complete = req[3];
+
+          if (!complete && !hasApproved) {
+            allPendingVotes.push({
+              campaignAddress: address,
+              requestIndex: i,
+              description: req[0],
+              value: formatEther(req[1].toString()),
+              recipient: req[2],
+              approvalCount: req[4].toString(),
+            });
+          }
+        }
       }
-    };
 
-    fetchData();
-  }, [campaigns, isConnected, account, isAdmin]);
+      // Build FundsRaisedChart data
+      const fundsData = Object.entries(fundsMap)
+        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+        .map(([date, totalAmount]) => ({ date, totalAmount }));
 
-  if (status !== 'authenticated') {
+      // Build FinalizationsChart data
+      const finalsData = Object.entries(finalMap)
+        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+        .map(([date, amount]) => ({ date, amount }));
+
+      // Build CampaignPerformanceChart data
+      const perfData = Object.entries(campaignPerfMap).map(([addr, finalizedAmount]) => {
+        const campaign = createdCamps.find((c) => c.contractAddress === addr);
+        return {
+          title: campaign ? campaign.title : addr.slice(0, 6) + '...',
+          targetAmount: campaign ? campaign.targetAmount : 0,
+          finalizedAmount,
+        };
+      });
+
+      // Set states
+      setFundsRaisedData(fundsData);
+      setFinalizationsData(finalsData);
+      setPendingRequests(allPendingVotes);
+      setCreatedCampaigns(createdCamps);
+      setCampaignPerformanceData(perfData);
+    } catch (err) {
+      console.error('Error fetching on-chain dashboard data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchData();
+}, [campaigns, isConnected, account]);
+
+  if (!isConnected) {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center py-12 bg-gray-50 rounded-lg shadow-xs">
           <FaSignInAlt className="text-5xl text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Sign in Required</h1>
-          <p className="text-gray-600 mb-4">You must sign in to access the dashboard.</p>
+          <h1 className="text-3xl font-bold mb-2">Wallet Connection Required</h1>
+          <p className="text-gray-600 mb-4">Please connect your wallet to access the dashboard.</p>
         </div>
       </div>
     );
   }
-
 
   if (isLoading) {
     return (
@@ -328,54 +236,14 @@ export default function Dashboard() {
     );
   }
 
-  if (isAdmin) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <AdminDashboardSection campaignsLength={campaigns.length} totalStats={totalStats} formatEther={formatEther} account={account || ''} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span--1">
-            <AdminStats
-              campaignsLength={campaigns.length}
-              totalStats={{
-                contributors: totalStats.contributors,
-                totalFunds: totalStats.totalFunds,
-                pendingRequests: totalStats.pendingRequests,
-                finalizedFunds: totalStats.finalizedFunds || '0',
-              }}
-              formatEther={(wei, decimals) => formatEther(typeof wei === 'number' ? BigInt(wei).toString() : wei, decimals)} // 確保類型正確
-            />
-            <AdminActions account={account || ''} />
-            <UserStats userContributionsLength={userContributions.length} pendingRequestsLength={pendingRequests.length} />
-          </div>
-          <div className="lg:col-span-2">
-            <CampaignManagement campaignSummaries={campaignSummaries} formatEther={formatEther} />
-            <YourInvestments userContributions={userContributions} formatEther={formatEther} />
-            <CampaignsICreated createdCampaigns={createdCampaigns} />
-            <FundsRaisedChart data={fundsRaisedData} />
-            <FinalizationsChart data={finalizationsData} />
-            <CampaignPerformanceChart data={campaignPerformanceData} />
-            <PendingVotes pendingRequests={pendingRequests} formatEther={formatEther} />
-          </div>
-        </div>
-        <UserManagementPanel />
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto px-4 py-16">
-      <UserDashboardSection userContributionsLength={userContributions.length} pendingRequestsLength={pendingRequests.length} account={account || ''} />
-      <YourInvestments userContributions={userContributions} formatEther={formatEther} />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Your On-Chain Dashboard</h1>
       <CampaignsICreated createdCampaigns={createdCampaigns} />
       <FundsRaisedChart data={fundsRaisedData} />
       <FinalizationsChart data={finalizationsData} />
       <CampaignPerformanceChart data={campaignPerformanceData} />
       <PendingVotes pendingRequests={pendingRequests} formatEther={formatEther} />
-      <div className="mt-8 text-center">
-        <Link href="/create" className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 inline-flex items-center">
-          <FaFileContract className="mr-2" /> Create Your Own Campaign
-        </Link>
-      </div>
     </div>
   );
 }

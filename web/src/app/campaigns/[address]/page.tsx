@@ -27,6 +27,7 @@ interface Request {
   index: number;
   requestId: string | null;
   hasApproved?: boolean;
+  timestamp: string; 
 }
 
 export default function CampaignPage() {
@@ -80,7 +81,9 @@ export default function CampaignPage() {
         setIsLoading(true);
 
         // Get campaign contract
-        const campaign = await getCampaignContract(address as string);
+        const campaign = await getCampaignContract( address as string );
+        const createdAt = await campaign.createdAt();
+        setCampaignCreatedAt(new Date(Number(createdAt) * 1000).toLocaleString());
 
         // Get basic campaign info
         const mgr = await campaign.manager();
@@ -106,15 +109,15 @@ export default function CampaignPage() {
         setMinimumContribution(minContr.toString());
         setBalance(bal.toString());
         setApproversCount( approversCountBN.toString() );
-        const dbRes = await fetch(`/api/campaigns/${address?.toLocaleLowerCase()}`);
-        if (dbRes.ok) {
-          const data = await dbRes.json();
-          setCampaignTitle(data.title || '');
-          setCampaignDescription(data.description || '');
-          setCampaignTargetAmount(data.targetAmount?.toString() || '');
-          setCampaignCreatedAt( new Date( data.createdAt ).toLocaleString() );
-          setCampaignContactInfo(data.contactInfo || '');
-        }
+        const title = await campaign.title();
+        const description = await campaign.description();
+        const targetAmount = await campaign.targetAmount();
+        const contactInfo = await campaign.contactInfo();
+
+        setCampaignTitle(title);
+        setCampaignDescription(description);
+        setCampaignTargetAmount(targetAmount.toString());
+        setCampaignContactInfo(contactInfo);
 
         // Load requests
         await loadRequests();
@@ -133,74 +136,63 @@ export default function CampaignPage() {
     loadCampaignData();
   }, [address, isConnected, account]);
 
-  // Load requests
-  // Load requests
-  async function loadRequests() {
+async function loadRequests() {
   try {
     const campaign = await getCampaignContract(address as string);
 
-    // Fetch all requests from the database
-    const response = await fetch(`/api/requests?campaignAddress=${address}`);
-    const dbRequests = await response.json();
-    console.log('Database requests:', dbRequests); // 調試用
+    const filter1 = campaign.filters.RequestCreated();
+    const requestEvents = await campaign.queryFilter(filter1, 0, 'latest');
 
-    let currentIndex = 0;
-    let foundRequest = true;
-    const requestsArray: Request[] = [];
+    const provider = getProvider();
+    const filter = campaign.filters.RequestApproved(null, null);
+    const approvalEvents = await campaign.queryFilter(filter, 0, 'latest');
 
-    while (foundRequest) {
-      try {
-        const request = await campaign.requests(currentIndex);
+    const approversCountBN = await campaign.approversCount();
+    const approversCount = Number(approversCountBN);
 
-        // 使用 currentIndex 匹配後端返回的資料
-        const dbRequest = dbRequests.find(
-          (r: any) =>
-            r.reason === request.description &&
-            Number(r.amount) === Number(ethers.formatEther(request.value))
-        );
+    const requestsArray: Request[] = await Promise.all(requestEvents.map(async (ev, index) => {
+      const eventLog = ev as ethers.EventLog;
 
-        // Add to requests array
-        requestsArray.push({
-          description: request.description,
-          value: request.value.toString(),
-          recipient: request.recipient,
-          complete: request.complete,
-          approvalCount: Number(request.approvalCount),
-          approvers: Number(await campaign.approversCount()),
-          index: currentIndex,
-          requestId: dbRequest?.id || null, // 從後端獲取 requestId
-        });
+      // ⭐ call getRequest(index) → 確保拿到最新狀態
+      const [desc, val, recipient, complete, approvalCount] = await campaign.getRequest(index);
 
-        currentIndex++;
-      } catch (error) {
-        // No more requests
-        foundRequest = false;
-      }
-    }
-
-    console.log('Requests array:', requestsArray); // 檢查處理後的請求資料
-
-    // 如果用戶是 approver，檢查哪些請求已被批准
-    if (isApprover && account) {
-      const updatedRequests = await Promise.all(
-        requestsArray.map(async (request) => {
-          try {
-            // 檢查用戶是否已批准該請求（這裡是佔位邏輯）
-            return { ...request, hasApproved: false };
-          } catch (error) {
-            return { ...request, hasApproved: false };
-          }
-        })
+      const hasApproved = approvalEvents.some(
+        (approvalEv) => {
+          const approvalEventLog = approvalEv as ethers.EventLog;
+          return approvalEventLog.args &&
+            Number(approvalEventLog.args.index) === index &&
+            approvalEventLog.args.approver.toLowerCase() === account?.toLowerCase();
+        }
       );
 
-      setRequests(updatedRequests);
-    } else {
-      setRequests(requestsArray);
-    }
+      const timestamp = eventLog.args?.timestamp
+      ? new Date(Number(eventLog.args.timestamp) * 1000).toLocaleString()
+      : 'N/A';
+
+      return {
+        description: desc,
+        value: val.toString(),
+        recipient,
+        complete,
+        approvalCount: Number(approvalCount),
+        approvers: approversCount,
+        index,
+        requestId: `${address}-${index}`,
+        hasApproved,
+        timestamp
+      };
+    }));
+
+    console.log('Final requestsArray:', requestsArray);
+    setRequests(requestsArray);
   } catch (error) {
     console.error("Error loading requests:", error);
   }
 }
+
+
+
+
 
   // Contribute to campaign
   async function handleContribute() {
@@ -227,21 +219,6 @@ export default function CampaignPage() {
         ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
         : '0';
 
-      // 送資料到 API 儲存 contribution
-      await fetch('/api/contributions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          txHash: receipt.hash,
-          contributorAddress: account,
-          campaignAddress: address,
-          amount: contributionAmount,
-          gasCost,
-          note: '' // optional: 可讓用戶自訂備註
-        })
-      });
-
-      // 更新 UI
       setMessage({ text: 'Contribution successful!', type: 'success' });
       setContributionAmount('');
       setIsApprover(true);
@@ -253,6 +230,7 @@ export default function CampaignPage() {
       const campaign = await getCampaignContract(address as string);
       const approversCountBN = await campaign.approversCount();
       setApproversCount(approversCountBN.toString());
+
     } catch (err: any) {
       console.error("Contribute failed:", err);
       setMessage({
@@ -294,27 +272,13 @@ export default function CampaignPage() {
       const gasCost = tx.gasPrice && receipt.gasUsed
         ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
         : '0';
-
-      // 寫入資料庫
-      await fetch('/api/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          txHash: receipt.hash,
-          campaignAddress: address,
-          reason: requestDescription, // ✅ 改為 reason
-          amount: parseFloat(requestAmount), // ✅ 確保是 number
-          gasCost,
-        }),
-      });
-
-
-      // UI 更新
       setMessage({ text: 'Request created successfully!', type: 'success' });
       setRequestDescription('');
       setRequestAmount('');
       setRequestRecipient('');
       setShowCreateForm(false);
+
+      // Refresh requests
       await loadRequests();
     } catch (err: any) {
       console.error("Create request failed:", err);
@@ -329,11 +293,12 @@ export default function CampaignPage() {
 
 
   // Approve a request
-  async function handleApproveRequest ( index: number, requestId: string )
+  // Approve a request
+  async function handleApproveRequest ( index: number )
   {
-    console.log('Approving request with:', { index, requestId }); // 在這裡添加
+  const requestId = requests[index]?.requestId;
+  console.log('Approving request with:', { index, requestId }); // 調試用
 
-  
   try {
     setMessage({ text: '', type: '' });
 
@@ -341,30 +306,11 @@ export default function CampaignPage() {
     const tx = await campaignWithSigner.approveRequest(index);
 
     setMessage({ text: 'Processing approval...', type: 'info' });
-    const receipt = await tx.wait();
-
-    const gasCost = tx.gasPrice && receipt.gasUsed
-      ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
-      : '0';
-    console.log('Submitting vote with:', {
-      txHash: receipt.hash,
-      requestId,
-      voterAddress: account,
-      gasCost,
-    });
-
-    await fetch('/api/votes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        txHash: receipt.hash,
-        requestId,             // ✅ Prisma 需要這個 UUID
-        voterAddress: account, // ✅ Prisma 用這欄做關聯
-        gasCost,
-      }),
-    });
+    await tx.wait();
 
     setMessage({ text: 'Request approved successfully!', type: 'success' });
+
+    // 重新載入 requests → 從鏈上 event + /api/requests 抓最新狀態
     await loadRequests();
   } catch (err: any) {
     console.error("Approve request failed:", err);
@@ -377,9 +323,12 @@ export default function CampaignPage() {
 
 
 
+
   // Finalize a request
-  async function handleFinalizeRequest(index: number, requestId: string) {
-  try {
+async function handleFinalizeRequest(index: number) {
+  try
+  {
+    const requestId = requests[index]?.requestId;
     setMessage({ text: '', type: '' });
 
     const campaignWithSigner = await getCampaignContractWithSigner(address as string);
@@ -391,19 +340,6 @@ export default function CampaignPage() {
     const gasCost = tx.gasPrice && receipt.gasUsed
       ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
       : '0';
-
-    await fetch('/api/finalizations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        txHash: receipt.hash,
-        requestId,
-        fundSeekerAddr: account, // 現在登入的 user
-        campaignAddr: address,
-        amount: parseFloat(requests[index].value), // 記得保證這是 number
-        gasCost
-      })
-    });
 
     setMessage({ text: 'Request finalized successfully!', type: 'success' });
     await loadRequests();
@@ -462,7 +398,9 @@ export default function CampaignPage() {
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">{campaignTitle}</h2>
               <p className="text-gray-600 mt-1">{campaignDescription}</p>
-              <p className="text-sm text-gray-500 mt-2">🎯 Target: {campaignTargetAmount} ETH</p>
+             <p className="text-sm text-gray-500 mt-2">
+              🎯 Target: {formatEther(campaignTargetAmount)} ETH ({campaignTargetAmount} Wei)
+            </p>
               <p className="text-sm text-gray-400">📅 Created at: {campaignCreatedAt}</p>
               <p className="text-sm text-gray-400">📩 Contact: {campaignContactInfo}</p>
             </div>

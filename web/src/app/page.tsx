@@ -18,6 +18,7 @@ interface CampaignSummary {
   minimumContribution: string;
   balance: string;
   approversCount: number;
+  title: string;
 }
 
 export default function Home() {
@@ -54,10 +55,12 @@ export default function Home() {
             const manager = await campaign.manager(); // get the manager's address
             const minimumContribution = await campaign.minimumContribution(); // get the minimum contribution required
             const approversCount = await campaign.approversCount(); // get the number of approvers
-            const balance = await provider.getBalance(address); // get the balance of the campaign contract
+            const balance = await provider.getBalance( address ); // get the balance of the campaign contract
+            const title = await campaign.title();
 
             return {
               address,
+              title,
               manager,
               minimumContribution: minimumContribution.toString(),
               balance: balance.toString(),
@@ -67,6 +70,7 @@ export default function Home() {
             console.error(`Error fetching data for campaign ${address}:`, error);
             return {
               address,
+              title: 'Error loading',
               manager: 'Error loading',
               minimumContribution: '0',
               balance: '0',

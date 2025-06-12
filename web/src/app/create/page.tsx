@@ -11,13 +11,13 @@ import CreateCampaignForm from '@/components/create/CreateCampaignForm';
 
 export default function CreateCampaignPage() {
   const router = useRouter();
-  const { isConnected, account: walletAddress } = useWallet();
+  const { isConnected } = useWallet();
 
   const [minimumContribution, setMinimumContribution] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
-  const [contactInfo, setContactInfo] = useState('');
+  const [contactInfo, setContactInfo] = useState(''); // 這欄目前你合約沒用，但可以保留 UI 用
 
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -25,7 +25,7 @@ export default function CreateCampaignPage() {
   async function handleCreateCampaign(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!minimumContribution || !title || !targetAmount || !contactInfo) {
+    if (!minimumContribution || !title || !targetAmount) {
       setMessage({ text: 'Please fill in all required fields', type: 'error' });
       return;
     }
@@ -35,17 +35,23 @@ export default function CreateCampaignPage() {
       setMessage({ text: '', type: '' });
 
       const minimumInWei = ethers.parseEther(minimumContribution);
+      const targetAmountWei = ethers.parseEther(targetAmount);
       const factoryWithSigner = await getFactoryContractWithSigner();
 
       setMessage({ text: 'Creating campaign...', type: 'info' });
-      const tx = await factoryWithSigner.createCampaign(minimumInWei, {
-        value: ethers.parseEther("0.02"),
-      });
+      const tx = await factoryWithSigner.createCampaign(
+        minimumInWei,
+        title,
+        description,
+        targetAmountWei,
+        contactInfo, // ⭐️ 這裡要補 contactInfo，string
+        { value: ethers.parseEther("0.02") } // ⭐️ 這才是 tx option
+      );
 
       const receipt = await tx.wait();
 
       const factoryInterface = new Interface([
-        'event CampaignCreated(address campaignAddress, address creator)'
+        'event CampaignCreated(address campaignAddress, address creator, uint timestamp)'
       ]);
 
       let campaignAddress = '';
@@ -66,45 +72,27 @@ export default function CreateCampaignPage() {
         throw new Error('❌ Failed to extract campaign address from logs');
       }
 
-      const gasCost = tx.gasPrice && receipt.gasUsed
-        ? ethers.formatEther(tx.gasPrice * receipt.gasUsed)
-        : '0';
-
-      await fetch('/api/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description,
-          minimumContribution,
-          targetAmount,
-          walletAddress,
-          contractAddress: campaignAddress,
-          gasCost,
-          commission: '0.01',
-          contactInfo,
-        })
-      });
-
       setMessage({
         text: 'Campaign created successfully! Redirecting to home page...',
-        type: 'success'
+        type: 'success',
       });
 
+      // Reset form
       setMinimumContribution('');
       setTitle('');
       setDescription('');
       setTargetAmount('');
       setContactInfo('');
 
+      // Redirect
       setTimeout(() => {
         router.push('/');
       }, 2000);
     } catch (err: any) {
-      console.error("Create campaign failed:", err);
+      console.error('Create campaign failed:', err);
       setMessage({
         text: err.reason || err.message || 'Failed to create campaign. Please try again.',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setIsCreating(false);
@@ -130,11 +118,15 @@ export default function CreateCampaignPage() {
       </Link>
 
       {message.text && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          message.type === 'error' ? 'bg-red-100 text-red-700' :
-          message.type === 'success' ? 'bg-green-100 text-green-700' :
-          'bg-blue-100 text-blue-700'
-        }`}>
+        <div
+          className={`mb-6 p-4 rounded-lg ${
+            message.type === 'error'
+              ? 'bg-red-100 text-red-700'
+              : message.type === 'success'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-blue-100 text-blue-700'
+          }`}
+        >
           {message.type === 'error' && <FaExclamationTriangle className="inline mr-2" />}
           {message.type === 'success' && <FaCheckCircle className="inline mr-2" />}
           {message.text}
