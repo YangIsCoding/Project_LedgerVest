@@ -62,7 +62,7 @@ export default function Navbar() {
             </ul>
 
             {/* Wallet Button */}
-            {isMounted && <ConnectButton />}
+            {isMounted && typeof window !== 'undefined' && <ConnectButton />}
           </div>
 
           {/* Mobile Menu Button */}
@@ -100,7 +100,7 @@ export default function Navbar() {
           {/* Mobile Wallet Button */}
           {isMounted && (
             <div className="mt-4 px-3">
-              { <ConnectButton />}
+              {isMounted && typeof window !== 'undefined' && <ConnectButton />}
             </div>
           )}
         </div>

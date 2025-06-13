@@ -6,7 +6,7 @@ import {
   ReactNode,
   useState,
   useEffect,
-  useCallback
+  useCallback,
 } from 'react';
 import { ethers } from 'ethers';
 import { useAccount, useChainId } from 'wagmi';
@@ -41,15 +41,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [campaigns, setCampaigns] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // 初始化 provider → 用 useEffect，避免 server-side 出錯
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      const browserProvider = new ethers.BrowserProvider(window.ethereum);
-      setProvider(browserProvider);
+  const initProvider = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      if (window.ethereum) {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        setProvider(browserProvider);
+      } else {
+        console.warn('No Ethereum provider found');
+        setProvider(null);
+      }
     } else {
       setProvider(null);
     }
   }, []);
+
+  useEffect(() => {
+    initProvider();
+  }, [initProvider]);
 
   const loadCampaigns = useCallback(async () => {
     if (!provider) {
@@ -87,6 +95,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           console.error('Error fetching signer:', err);
           setSigner(null);
         });
+
       provider
         .getBalance(address)
         .then((rawBalance) => {
@@ -141,14 +150,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     networkName,
     factoryAddress,
     campaigns,
-    loadCampaigns
+    loadCampaigns,
   };
 
-  return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
-  );
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWallet() {

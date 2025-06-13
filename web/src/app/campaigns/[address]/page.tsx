@@ -1,5 +1,6 @@
-'use client';
 
+'use client';
+export const dynamic = 'force-dynamic';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';

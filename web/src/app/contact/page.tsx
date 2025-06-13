@@ -1,86 +1,13 @@
-'use client';
+// src/app/contact/page.tsx
+import ClientOnly from '@/components/ClientOnly';
+import ContactForm from './ContactForm';
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic';   // ← 不再做 SSG，避免再度預執行前端程式
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
-  const [status, setStatus] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setStatus('');
-
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-
-      if (res.ok) {
-        setStatus('✅ Message sent!');
-        setForm({ name: '', email: '', message: '' });
-      } else {
-        const errorData = await res.json();
-        setStatus(`❌ Failed to send message: ${errorData.message || 'Unknown error.'}`);
-      }
-    } catch (error) {
-      console.error('Error submitting contact form:', error);
-      setStatus('❌ Failed to send message. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded-lg mt-10">
-      <h1 className="text-2xl font-bold mb-4">Contact Us</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="name"
-          placeholder="Your Name"
-          value={form.name}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Your Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-        <textarea
-          name="message"
-          placeholder="Your Message"
-          value={form.message}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border border-gray-300 rounded h-32"
-        />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition ${
-            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          {isSubmitting ? 'Sending...' : 'Send Message'}
-        </button>
-      </form>
-      {status && <p className={`mt-4 text-sm ${status.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
-        {status}
-      </p>}
-    </div>
+    <ClientOnly>
+      <ContactForm />
+    </ClientOnly>
   );
 }

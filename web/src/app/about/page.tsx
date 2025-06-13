@@ -155,8 +155,8 @@ export default function AboutPage() {
               <Image
                 src="/profile/yang.jpg"
                 alt="Pin-Yang Chen profile picture"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: 'cover' }}
                 className="rounded-full"
               />
             </div>
@@ -173,8 +173,8 @@ export default function AboutPage() {
               <Image
                 src="/profile/howard.jpg"
                 alt="Howard Wu profile picture"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: 'cover' }}
                 className="rounded-full"
               />
             </div>
@@ -191,8 +191,8 @@ export default function AboutPage() {
               <Image
                 src="/profile/freddy.jpg"
                 alt="Freddy Platinus profile picture"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: 'cover' }}
                 className="rounded-full"
               />
             </div>
@@ -209,8 +209,8 @@ export default function AboutPage() {
               <Image
                 src="/profile/junjie.jpg"
                 alt="Junjie Li profile picture"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: 'cover' }}
                 className="rounded-full"
               />
             </div>
@@ -227,8 +227,8 @@ export default function AboutPage() {
               <Image
                 src="/profile/chris.jpg"
                 alt="Chris Liu profile picture"
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: 'cover' }}
                 className="rounded-full"
               />
             </div>
