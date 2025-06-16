@@ -22,15 +22,15 @@ export function ClientProviders({ children }: Props) {
   const appInfo = { appName: 'LedgerVest' };
 
   /* ────── 3. provider 樹 ────── */
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-         <RainbowKitProvider appInfo={appInfo} locale="en">
-          <WalletProvider>
-            {children}
-          </WalletProvider>
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
-  );
+    return (
+        <WagmiProvider config={config}>
+            <QueryClientProvider client={queryClient}>
+                <RainbowKitProvider appInfo={appInfo} locale="en">
+                    <WalletProvider>
+                        {children}
+                    </WalletProvider>
+                </RainbowKitProvider>
+            </QueryClientProvider>
+        </WagmiProvider>
+     );
 }
