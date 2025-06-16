@@ -10,11 +10,24 @@ import { AppProviders } from '@/components/AppProviders'  // ‚Üê WagmiProvider Á
 
 import '@/polyfills/fdidb'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter( { subsets: [ 'latin' ] } )
+
 
 export const metadata: Metadata = {
   title: 'LedgerVest',
   description: 'A transparent, fair, and decentralized investment and lending platform.',
+  openGraph: {
+    title: 'LedgerVest',
+    description: 'Secure Investments Through Blockchain Technology',
+    images: [
+      {
+        url: '@/../public/hero-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'LedgerVest Preview Image',
+      },
+    ],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
