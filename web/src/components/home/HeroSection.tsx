@@ -1,7 +1,11 @@
+'use client';
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaUserCircle } from 'react-icons/fa';
+
+// ✅ 匯入圖片而不是使用字串路徑
+import heroImage from '/public/HeroSection.webp';
 
 interface HeroSectionProps {
   isConnected: boolean;
@@ -10,7 +14,7 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({ isConnected }) => {
   return (
     <section className="bg-blue-600 text-white py-20">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-4">
@@ -44,13 +48,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ isConnected }) => {
               )}
             </div>
           </div>
-          <div className="md:w-1/2">
+          <div className="md:w-1/2 min-h-[400px] flex items-center justify-center">
             <Image
-              src="/HeroSection.png"
+              src={heroImage} // ✅ 改成靜態 import
               alt="Hero Image"
               width={900}
               height={400}
-              className="w-auto h-full rounded-lg"
+              className="rounded-lg"
               priority
             />
           </div>

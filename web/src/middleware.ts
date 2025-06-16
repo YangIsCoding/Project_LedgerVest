@@ -5,17 +5,25 @@ const blocked = process.env.BLOCKED_WALLETS?.split(',').map(w => w.toLowerCase()
 
 export async function middleware(request: NextRequest) {
   const wallet = request.cookies.get('walletAddress')?.value;
-  if (!wallet) return NextResponse.next();
+
+  const response = NextResponse.next();
+  response.headers.set( 'Cache-Control', 'public, max-age=600, stale-while-revalidate=30' );
+  response.headers.set('X-Debug-Middleware', 'reached');
+
+  if (!wallet) return response;
 
   const normalized = wallet.toLowerCase();
   const isBlocked = blocked.includes(normalized);
 
   if (isBlocked) {
     const redirectUrl = new URL('/blocked', request.url);
-    return NextResponse.redirect(redirectUrl);
+    const blockedResponse = NextResponse.redirect(redirectUrl);
+    // ✅ 一樣加入 Cache-Control header
+    blockedResponse.headers.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=30');
+    return blockedResponse;
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

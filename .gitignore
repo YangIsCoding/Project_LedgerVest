@@ -1,5 +1,6 @@
 # Common
 node_modules/
+Diagrams/
 .DS_Store
 .env
 .env.local

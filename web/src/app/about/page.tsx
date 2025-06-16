@@ -1,4 +1,5 @@
 // src/app/about/page.tsx
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import {
   FaUsers,
@@ -14,7 +15,7 @@ import Image from 'next/image';
 
 export default function AboutPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto max-w-7xl px-4 py-12">
       <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">About LedgerVest</h1>
       <p className="text-xl text-gray-600 max-w-4xl mx-auto text-center mb-12">
         Revolutionizing fundraising with blockchain technology to create a transparent, fair, and secure platform for everyone.

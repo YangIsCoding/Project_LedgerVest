@@ -1,7 +1,7 @@
 // client-side components wrapper
 
 'use client';
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-static';
 import { useEffect, useState } from 'react';
 import { useWallet } from '@/lib/context/WalletContext';
 import { getCampaignContract, getProvider, formatEther } from '@/utils/ethers';
