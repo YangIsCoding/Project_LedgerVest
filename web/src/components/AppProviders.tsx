@@ -17,7 +17,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={qc}>
-        <RainbowKitProvider appInfo={appInfo}>
+        <RainbowKitProvider appInfo={appInfo} locale='en'>
           <WalletProvider>{children}</WalletProvider>
         </RainbowKitProvider>
       </QueryClientProvider>

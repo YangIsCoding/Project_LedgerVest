@@ -1,4 +1,5 @@
 // src/app/ClientProviders.tsx
+export const dynamic = 'force-dynamic';
 'use client';
 
 import { ReactNode, useState } from 'react';
@@ -24,7 +25,7 @@ export function ClientProviders({ children }: Props) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider appInfo={appInfo}>
+         <RainbowKitProvider appInfo={appInfo} locale="en">
           <WalletProvider>
             {children}
           </WalletProvider>

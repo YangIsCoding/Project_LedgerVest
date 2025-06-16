@@ -5,5 +5,8 @@
   "scripts": {
     "build": "npx prisma generate && next build",
     "dev": "next dev"
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.7"
   }
 }
