@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: 'Secure Investments Through Blockchain Technology',
     images: [
       {
-        url: '@/../public/hero-image.png',
+        url: '/HeroSection.png',
         width: 1200,
         height: 630,
         alt: 'LedgerVest Preview Image',
