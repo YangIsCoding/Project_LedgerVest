@@ -21,6 +21,22 @@ interface CampaignSummary {
   approversCount: number;
   title: string;
 }
+export const metadata = {
+  title: 'LedgerVest',
+  description: 'Decentralized investment platform',
+  openGraph: {
+    title: 'LedgerVest',
+    description: 'Secure Investments Through Blockchain Technology',
+    images: [
+      {
+        url: '@/../public/hero-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'LedgerVest Preview Image',
+      },
+    ],
+  },
+};
 
 export default function Home() {
   // entry point for the Home page component
