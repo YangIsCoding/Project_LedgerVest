@@ -28,18 +28,11 @@ export default function Footer() {
           <div>
             <h5 className="font-bold text-lg mb-4">Connect With Us</h5>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-white">
-                <FaTwitter size={24} />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white">
-                <FaLinkedin size={24} />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white">
+        
+              <a href="https://github.com/YangIsCoding" className="text-gray-300 hover:text-white">
                 <FaGithub size={24} />
               </a>
-              <a href="#" className="text-gray-300 hover:text-white">
-                <FaTelegram size={24} />
-              </a>
+             
             </div>
           </div>
         </div>

@@ -20,7 +20,7 @@ import {
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 
 /* ──────────────── 1. 鏈清單 ──────────────── */
-export const chains = [
+/*export const chains = [
   sepolia,
   mainnet,
   polygon,
@@ -31,9 +31,9 @@ export const chains = [
   optimismSepolia,
   linea,
   lineaSepolia,
-] as const;
+] as const;*/
+export const chains = [sepolia] as const;
 
-/* ──────────────── 2. RainbowKit 預設錢包 + WalletConnect ──────────────── */
 const { connectors } = getDefaultWallets({
   appName: 'LedgerVest',
   // 到 https://cloud.walletconnect.com 申請一個專案，複製 Project ID
@@ -46,8 +46,8 @@ const config = createConfig({
   connectors,                     // RainbowKit 的 connectors
   chains,                         // 支援的鏈
   transports: {
-    [sepolia.id]: http(),         // 預設用 public RPC；正式環境建議填 Infura/Alchemy
-    [mainnet.id]: http(),
+    [sepolia.id]: http()         // 預設用 public RPC；正式環境建議填 Infura/Alchemy
+    /*[mainnet.id]: http(),
     [polygon.id]: http(),
     [polygonMumbai.id]: http(),
     [arbitrum.id]: http(),
@@ -55,7 +55,7 @@ const config = createConfig({
     [optimism.id]: http(),
     [optimismSepolia.id]: http(),
     [linea.id]: http(),
-    [lineaSepolia.id]: http(),
+    [lineaSepolia.id]: http(),*/
   },
 
   /* 👇 關鍵：把 WalletConnect 的持久化層改成 cookieStorage，   */

@@ -7,6 +7,7 @@ import './globals.css'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { AppProviders } from '@/components/AppProviders'  // ← WagmiProvider 等都在這
+import ChainBanner from '@/components/layout/ChainBanner'
 
 import '@/polyfills/fdidb'
 
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={inter.className}>
         <AppProviders>
+        <ChainBanner />
           <Navbar />
           <main className="min-h-screen">{children}</main>
         </AppProviders>

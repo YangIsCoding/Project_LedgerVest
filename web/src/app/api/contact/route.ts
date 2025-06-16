@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,3 +25,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function GET(req: NextRequest) {
+  try {
+    const contacts = await prisma.contactMessage.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return NextResponse.json(contacts);
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to fetch contact data' }, { status: 500 });
+  }
+}
+
