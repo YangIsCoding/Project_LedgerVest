@@ -7,6 +7,7 @@
     "dev": "next dev"
   },
   "dependencies": {
-    "@rainbow-me/rainbowkit": "^2.2.7"
+    "@rainbow-me/rainbowkit": "^2.2.7",
+    "critters": "^0.0.25"
   }
 }
