@@ -1,4 +1,7 @@
-export default function BlockedPage() {
+export const dynamic = 'force-dynamic';
+
+export default function BlockedPage ()
+{
   return (
     <div className="flex items-center justify-center h-screen bg-red-50">
       <div className="bg-white border border-red-300 p-8 rounded-lg shadow text-center">

@@ -1,6 +1,7 @@
 // src/app/contact/ContactForm.tsx
-'use client';
 
+'use client';
+export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 
 export default function ContactForm() {

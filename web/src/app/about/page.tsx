@@ -154,7 +154,7 @@ export default function AboutPage() {
           <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] bg-white rounded-lg shadow-xs p-6 text-center"> {/* Added width classes */}
             <div className="relative w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden">
               <Image
-                src="/profile/yang.jpg"
+                src="/profile/yang.webp"
                 alt="Pin-Yang Chen profile picture"
                 fill
                 style={{ objectFit: 'cover' }}
@@ -172,7 +172,7 @@ export default function AboutPage() {
           <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] bg-white rounded-lg shadow-xs p-6 text-center"> {/* Added width classes */}
             <div className="relative w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden">
               <Image
-                src="/profile/howard.jpg"
+                src="/profile/howard.webp"
                 alt="Howard Wu profile picture"
                 fill
                 style={{ objectFit: 'cover' }}
@@ -190,7 +190,7 @@ export default function AboutPage() {
           <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] bg-white rounded-lg shadow-xs p-6 text-center"> {/* Added width classes */}
             <div className="relative w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden">
               <Image
-                src="/profile/freddy.jpg"
+                src="/profile/freddy.webp"
                 alt="Freddy Platinus profile picture"
                 fill
                 style={{ objectFit: 'cover' }}
@@ -208,7 +208,7 @@ export default function AboutPage() {
           <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] bg-white rounded-lg shadow-xs p-6 text-center"> {/* Added width classes */}
             <div className="relative w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden">
               <Image
-                src="/profile/junjie.jpg"
+                src="/profile/junjie.webp"
                 alt="Junjie Li profile picture"
                 fill
                 style={{ objectFit: 'cover' }}
@@ -226,7 +226,7 @@ export default function AboutPage() {
           <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.34rem)] bg-white rounded-lg shadow-xs p-6 text-center"> {/* Added width classes */}
             <div className="relative w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden">
               <Image
-                src="/profile/chris.jpg"
+                src="/profile/chris.webp"
                 alt="Chris Liu profile picture"
                 fill
                 style={{ objectFit: 'cover' }}
