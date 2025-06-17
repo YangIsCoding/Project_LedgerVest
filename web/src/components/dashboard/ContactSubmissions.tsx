@@ -11,18 +11,36 @@ interface Contact {
 
 export default function ContactSubmissions() {
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/contact')
       .then((res) => res.json())
-      .then(setContacts)
-      .catch(console.error);
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setContacts(data);
+        } else {
+          console.error('📛 Invalid data format:', data);
+          setError('Failed to load contact submissions.');
+        }
+      })
+      .catch((err) => {
+        console.error('📛 Fetch error:', err);
+        setError('Something went wrong while fetching data.');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow mb-8">
       <h2 className="text-xl font-semibold mb-4">Contact Form Submissions</h2>
-      {contacts.length === 0 ? (
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : contacts.length === 0 ? (
         <p>No contact submissions found.</p>
       ) : (
         <ul className="divide-y divide-gray-200">
